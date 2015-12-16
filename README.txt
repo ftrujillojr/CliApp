@@ -1,5 +1,8 @@
 A Java Command Line Application example
 
+This file shows how to => Create_a_Maven_Archetype_from_an_existing_project.pdf
+
+
 pom.xml
        JUnit                        v4.11
        Apache commons-cli           v1.3
@@ -16,6 +19,7 @@ pom.xml
 
 
 /home/ftrujillo/NetBeansProjects/CliApp
+|-- Create_a_Maven_Archetype_from_an_existing_project.pdf
 |-- nbactions.xml
 |-- pom.xml
 |-- README.txt
