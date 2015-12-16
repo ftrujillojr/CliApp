@@ -36,7 +36,9 @@ pom.xml
             `-- org
                 `-- nve
                     `-- cliapp
-                        `-- TemplateTest.java
+                        |-- TemplateTest.java
+                        `-- TestCliWrapper.java
+
 
 
 =======================================================================================
