@@ -21,8 +21,6 @@ import static org.junit.Assert.*;
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.12.4</version>
         <configuration>
-            <parallel>methods</parallel>
-            <threadCount>4</threadCount>
             <skipTests>false</skipTests>
         </configuration>
     </plugin>
