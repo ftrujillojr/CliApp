@@ -16,7 +16,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 /**
- * 
+ *
  * Need help on Apache Cli
  *
  * http://www.javaworld.com/article/2072482/command-line-parsing-with-apache-commons-cli.html
@@ -33,6 +33,7 @@ public class CliWrapper {
     private String programName;
     private String emailAddress;
     private String appDescription;
+    private Boolean allowNonOptions;
 
     @SuppressWarnings("RedundantStringConstructorCall")
     public CliWrapper(List<Option> optList, String progName, String appDesc, String emailContact) {
@@ -43,22 +44,30 @@ public class CliWrapper {
         programName = new String(progName);
         appDescription = new String(appDesc);
         emailAddress = new String(emailContact);
+        allowNonOptions = false;  // set to false to throw exception on non arg parsed.  
+    }
+
+    public void setAllowNonOptions() {
+        allowNonOptions = true; // This will allow non options to fall through without throwing exception.
+    }
+
+    public void clrAllowNonOptions() {
+        allowNonOptions = false; // This is the default and WILL throw exception if command line switch not in options list.
     }
 
     public Map<String, Object> parseArgsToMap(String[] args) throws CliWrapperException {
         this.initOptions();
-        boolean allowNonOptions = false;  // set to false to throw exception on non arg parsed.  
 
         try {
             CommandLine cmd = parser.parse(options, args, allowNonOptions);
             this.generateCliMap(cmd);
-            
-            if ((Integer) cliMap.get("debug") >= 3) {
+
+            if (cliMap.containsKey("debug") && (Integer) cliMap.get("debug") >= 3) {
                 this.displayCliMap();
             }
 
             // If you threw the --help or -h option.
-            if ((Boolean) cliMap.get("help")) {
+            if (cliMap.containsKey("help") && (Boolean) cliMap.get("help")) {
                 this.displayUsage();
             }
 
@@ -74,7 +83,7 @@ public class CliWrapper {
         HelpFormatter formatter = new HelpFormatter();
         System.out.println("");
         String header = "\n" + appDescription + "\n\n";
-        String footer = "\nPlease report any issues to "+  emailAddress + "\n";
+        String footer = "\nPlease report any issues to " + emailAddress + "\n";
         int width = 132;
         formatter.printHelp(width, programName, header, options, footer, true);
     }
@@ -121,9 +130,20 @@ public class CliWrapper {
             // This entire method should be part of Apache CLI in addOption method.
             options.addOption(option);
         }
+
+        // if developer forgot --help, then add it.
+        if (longArgs.contains("help") == false) {
+            options.addOption(Option.builder()
+                    .longOpt("help")
+                    .required(false)
+                    .hasArg(false)
+                    .desc("This help message")
+                    .type(Boolean.class)
+                    .build());
+        }
     }
 
-    private void generateCliMap(CommandLine cmd) throws CliWrapperException  {
+    private void generateCliMap(CommandLine cmd) throws CliWrapperException {
         Collection<Option> collection = options.getOptions();  // Original Options
         Iterator<Option> itr = collection.iterator();
 
