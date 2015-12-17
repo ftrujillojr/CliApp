@@ -61,7 +61,7 @@ public class RegExp {
      */
     public static boolean isMatch(String myRegEx, String myString) {
         Pattern pattern = Pattern.compile(myRegEx);
-        boolean found = isPatternMatch(pattern, myString);
+        boolean found = RegExp.isPatternMatch(pattern, myString);
         return (found);
     }
 
@@ -84,7 +84,7 @@ public class RegExp {
      */
     public static boolean isMatch(String myRegEx, String myString, int patternFlags) {
         Pattern pattern = Pattern.compile(myRegEx, patternFlags);
-        boolean found = isPatternMatch(pattern, myString);
+        boolean found = RegExp.isPatternMatch(pattern, myString);
         return (found);
     }
 
