@@ -1,37 +1,33 @@
 package org.nve.cliapp;
 
-// junit.framework.Test package is the legacy namespace used with Junit v3 and older versions of Java that do not support annotations.
-// org.junit.Test is the new namespace used by JUnit v4 and requires Java v1.5 or later for its annotations.
+import java.util.List;
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-//import org.junit.Ignore;
 
-/*   ARRANGE    ACT    ASSERT
+/* To run tests:
+ ============================
+ mvn test
+ mvn -Dtest=TestCircle test
+ (in Netbeans, Alt+F6)
 
-   To run tests:
-   ============================
-   mvn test
-   mvn -Dtest=TestCircle test
-   (in Netbeans, Alt+F6)
+ Your pom.xml should have this plugin.
 
-  Your pom.xml should have this plugin.
-
-  <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12.4</version>
-        <configuration>
-            <skipTests>false</skipTests>
-        </configuration>
-    </plugin>
-*/
-
+ <plugin>
+ <groupId>org.apache.maven.plugins</groupId>
+ <artifactId>maven-surefire-plugin</artifactId>
+ <version>2.12.4</version>
+ <configuration>
+ <skipTests>false</skipTests>
+ </configuration>
+ </plugin>
+ */
 /**
  * <pre>
  * http://junit.org/javadoc/latest/index.html     (JUnit must be >= 4.11)
- * 
+ *
  * assertArrayEquals(String msg,    **[] expect,   **[] actual)
  *      assertEquals(String msg,    ** expect,     ** actual)
  *   assertNotEquals(String msg,    ** unexpected, ** actual)
@@ -44,12 +40,12 @@ import static org.junit.Assert.*;
  *        assertThat(String reason, T actual, Match<T> matcher)
  *              fail()
  *              fail(String msg)
- * 
- * 
+ *
+ *
  * Matchers are used in assertThat() calls.
- * 
+ *
  * http://junit.org/javadoc/latest/org/hamcrest/core/package-frame.html
- * 
+ *
  *   assertThat("myValue",                          allOf(startsWith("my"), containsString("Val")))
  *   assertThat("myValue",                          anyOf(startsWith("foo"), containsString("Val")))
  *   assertThat("fab",                              both(containsString("a")).and(containsString("b")))
@@ -65,27 +61,27 @@ import static org.junit.Assert.*;
  *   assertThat("myStringOfNote",                   containsString("ring"))
  *   assertThat("myStringOfNote",                   endsWith("Note"))
  *   assertThat("myStringOfNote",                   startsWith("my"))
- * 
+ *
  * </pre>
  */
-public class TemplateTest {
-    
+public class TestRegExp {
+
     private static String someString;   // If needed, declare here and use setUpClass() to initialize.
-    
+
     /**
-     * Do not use the constructor to set up a test case. 
-     * Use setupClass() method below. 
-     * 
+     * Do not use the constructor to set up a test case. Use setupClass() method
+     * below.
+     *
      * The reason is the stack crashes if first test fails to instantiate.
-     */    
-    public TemplateTest() {
+     */
+    public TestRegExp() {
         // Best practice => Do not put anything here.
     }
 
     /**
      * Sometimes several tests need to share computationally expensive setup
-     * like logging into a database.
-     * If you need to do an initialization once before testing all methods.
+     * like logging into a database. If you need to do an initialization once
+     * before testing all methods.
      */
     @BeforeClass
     public static void setUpClass() {
@@ -99,16 +95,50 @@ public class TemplateTest {
     public static void tearDownClass() {
     }
 
-
     /**
-     * Give your test methods meaningful names.
+     * I know this is testing java RegEx.
+     * But, if you add stuff to RegExp class, then I want to ensure functionality
+     * is the same.
      */
     @Test
     //@Ignore
-    public void ensureStaticStringInitialized() {
-        assertEquals("Hello World", someString);
+    public void testIsMatch() {
+        // ARRANGE
+        String stringToTest = "Mary had 1 little lamb";
+        List<String> subExps = null;
+        
+        String re = ".*(little lamb).*";
+        String reBeginning = "^Mary.*";
+        String reNumber = ".*([0-9]+).*";
+        String reBad = ".*George.*";
+        String reCaseSensitive = "mary.*";
+        String reCaseInsensitive = "(?i:mary.*)"; // clunky, but it works
+        
+        String expect1 = "little lamb";
+        String expect2 = "1";
+        
+        // ACT + ASSERT
+        assertFalse("Failed to match sub string => " + reBad, RegExp.isMatch(reBad, stringToTest));
+        assertTrue("Failed to match sub string => " + reBeginning, RegExp.isMatch(reBeginning, stringToTest));
+        
+        // group1
+        assertTrue("Failed to match sub string => " + re, RegExp.isMatch(re, stringToTest));
+        subExps = RegExp.getSubExps();
+        assertTrue("Expected 2 subExps.", (subExps.size() == 2));
+        assertEquals("Failed to return grouping from regexp.", expect1, subExps.get(1));
+        
+        // group2
+        assertTrue("Failed to match sub string => " + reNumber, RegExp.isMatch(reNumber, stringToTest));
+        subExps = RegExp.getSubExps();
+        assertTrue("Expected 2 subExps.", (subExps.size() == 2));
+        assertEquals("Failed to return grouping from regexp.", expect2, subExps.get(1));
+        
+        // group3
+        assertFalse("Should have FAILED CASE SENSISTIVE  regex => " + reCaseSensitive, RegExp.isMatch(reCaseSensitive, stringToTest));
+        assertTrue("Should have  PASSED CASE INSENSITIVE regex => " + reCaseInsensitive, RegExp.isMatch(reCaseInsensitive, stringToTest));
+        assertTrue("Should have  PASSED CASE SENSISTIVE  regex => " + reCaseSensitive, RegExp.isMatch(reCaseSensitive, stringToTest, CASE_INSENSITIVE));
     }
-    
+
     /**
      * Sometimes your test will want to throw Exception to ensure that is does
      * throw the Exception.
@@ -117,17 +147,16 @@ public class TemplateTest {
     public void testingExceptionThrown() {
         this.someMethodThatThrowsExceptionAlways();
     }
-    
+
     /**
      * If a test MUST complete in a certain amount of time, then add timeout.
-     * 
+     *
      * NOTE: I am using the Latch.class that I defined in src.main.java.....
-     *       Why?  multi-thread testing and sleep do not mix.  
-     *       Latch solves this by allowing us to effectively "sleep"
-     * 
-     * @throws InterruptedException 
+     * Why? multi-thread testing and sleep do not mix. Latch solves this by
+     * allowing us to effectively "sleep"
+     *
+     * @throws InterruptedException
      */
-    
     @Test(timeout = 2500)
     public void testTransactTimeout() throws InterruptedException {
         Latch l = new Latch(2, 1000); // 2 iterations @ 1000 milliseconds each.
@@ -139,14 +168,14 @@ public class TemplateTest {
         l.waitForLatchToComplete();
 
         // Do some more stuff.
-    }    
-    
+    }
+
     /**
-     * This is NOT a test.  
-     * Just an example method that throws an exception ALWAYS.
+     * This is NOT a test. Just an example method that throws an exception
+     * ALWAYS.
      */
     private void someMethodThatThrowsExceptionAlways() {
         throw new NullPointerException("This is just an example");
     }
-    
+
 }
