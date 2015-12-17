@@ -95,6 +95,45 @@ public class TestRegExp {
     public static void tearDownClass() {
     }
 
+    @Test
+    public void testReplaceFirst() {
+        // ARRANGE
+        String myString = "one two three one two three";
+        String firstExpect = "one 2 three one two three";
+        
+        // ACT
+        String firstActual = RegExp.replaceFirst("two", myString, "2");
+        
+        // ASSERT
+        assertEquals(firstExpect, firstActual);
+    }
+    
+    @Test
+    public void testReplaceLast() {
+        // ARRANGE
+        String myString = "one two three one two three";
+        String firstExpect = "one two three one 2 three";
+        
+        // ACT
+        String firstActual = RegExp.replaceLast("two", myString, "2");
+        
+        // ASSERT
+        assertEquals(firstExpect, firstActual);
+    }
+    
+    @Test
+    public void testReplaceAll() {
+        // ARRANGE
+        String myString = "one two three one two three";
+        String allExpect = "one 2 three one 2 three";
+        
+        // ACT
+        String allActual = RegExp.replaceAll("two", myString, "2");
+        
+        // ASSERT
+        assertEquals(allExpect, allActual);
+    }
+
     /**
      * I know this is testing java RegEx.
      * But, if you add stuff to RegExp class, then I want to ensure functionality
@@ -139,6 +178,8 @@ public class TestRegExp {
         assertTrue("Should have  PASSED CASE SENSISTIVE  regex => " + reCaseSensitive, RegExp.isMatch(reCaseSensitive, stringToTest, CASE_INSENSITIVE));
     }
 
+    
+    
     /**
      * Sometimes your test will want to throw Exception to ensure that is does
      * throw the Exception.

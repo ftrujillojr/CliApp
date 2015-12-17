@@ -6,19 +6,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RegExp {
+
     private static List<String> subExps = new ArrayList<>();
-    
+
     public RegExp() {
     }
-    
+
     /**
      * Case sensitive regex match.
-     * 
+     *
      * @param myRegEx
      * @param myString
-     * @return 
+     * @return
      */
-
     public static boolean isMatch(String myRegEx, String myString) {
         Pattern pattern = Pattern.compile(myRegEx);
         boolean found = isPatternMatch(pattern, myString);
@@ -26,37 +26,73 @@ public class RegExp {
     }
 
     /**
-     * patternFlags are from java.util.regex.Pattern enums.
-     * You can OR these as needed and pass into patternFlags in this method.
-     * 
+     * patternFlags are from java.util.regex.Pattern enums. You can OR these as
+     * needed and pass into patternFlags in this method.
+     *
      * UNICODE_CASE | UNIX_LINES | CASE_INSENSITIVE | COMMENTS | MULTILINE
-     * 
-     * Or, you can use these prefixes for the regular expression itself.
-     * ?u:            ?d:          ?i:                ?x:        ?m:
-     * 
-     * String re = "(?i:.*this is case insensitive reg ex.*)";  // MUST HAVE ()
-     * 
+     *
+     * Or, you can use these prefixes for the regular expression itself. ?u: ?d:
+     * ?i: ?x: ?m:
+     *
+     * String re = "(?i:.*this is case insensitive reg ex.*)"; // MUST HAVE ()
+     *
      * @param myRegEx
      * @param myString
      * @param patternFlags
-     * @return 
+     * @return
      */
     public static boolean isMatch(String myRegEx, String myString, int patternFlags) {
         Pattern pattern = Pattern.compile(myRegEx, patternFlags);
         boolean found = isPatternMatch(pattern, myString);
         return (found);
     }
-    
+
     /**
-     * After you call isMatch() or other public methods, then subExps will contain
-     * the LAST group match.
-     * 
-     * @return 
+     * After you call isMatch() or other public methods, then subExps will
+     * contain the LAST group match.
+     *
+     * @return
      */
     public static List<String> getSubExps() {
         return subExps;
     }
+
+    public static String replaceAll(String myRegEx, String myString, String myReplace) {
+        Pattern pattern = Pattern.compile(myRegEx);
+        Matcher matcher = pattern.matcher(myString);
+        String result = matcher.replaceAll(myReplace);
+        return (result);
+    }
+
+    public static String replaceFirst(String myRegEx, String myString, String myReplace) {
+        Pattern pattern = Pattern.compile(myRegEx);
+        Matcher matcher = pattern.matcher(myString);
+        String result = matcher.replaceFirst(myReplace);
+        return (result);
+    }
     
+    
+    /**
+     * Java does NOT have a replaceLast.
+     * 
+     * http://www.rexegg.com/regex-lookarounds.html
+     * http://www.ocpsoft.org/opensource/guide-to-regular-expressions-in-java-part-2/
+     * 
+     * @param myRegEx
+     * @param myString
+     * @param myReplace
+     * @return 
+     */
+    public static String replaceLast(String myRegEx, String myString, String myReplace) {
+        String negativeRegEx = "(?s)" + myRegEx + "(?!.*?" + myRegEx + ")";
+        Pattern pattern = Pattern.compile(negativeRegEx);
+        Matcher matcher = pattern.matcher(myString);
+        String result = matcher.replaceFirst(myReplace);
+        return (result);
+    }
+
+    
+
     /**
      * For re-usability in this class and consistency.
      * 
@@ -78,5 +114,5 @@ public class RegExp {
 
         return (found);
     }
-    
+
 }
