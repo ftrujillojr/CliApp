@@ -2,6 +2,12 @@ A Java Command Line Application example
 
 This file shows how to => Create_a_Maven_Archetype_from_an_existing_project.pdf
 
+* CliWrapper wraps Apache CLI with additional functionality that is missing.
+
+* RegExp is just for me as I do not like to clutter up my code with 5 lines of
+  code just to do a regex pattern match.  Plus, I want something that works and is 
+  unit tested.
+
 
 pom.xml
        JUnit                        v4.11
@@ -41,8 +47,8 @@ pom.xml
                 `-- nve
                     `-- cliapp
                         |-- TemplateTest.java
-                        `-- TestCliWrapper.java
-
+                        |-- TestCliWrapper.java
+                        `-- TestRegExp.java
 
 
 =======================================================================================
