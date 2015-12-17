@@ -1,5 +1,6 @@
 package org.nve.cliapp;
 
+import java.util.ArrayList;
 import java.util.List;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import org.junit.AfterClass;
@@ -93,6 +94,37 @@ public class TestRegExp {
      */
     @AfterClass
     public static void tearDownClass() {
+    }
+    
+    @Test 
+    public void testSplit() {
+        // ARRANGE
+        String myString = "one two\tthree-one\ntwo three\n";
+        
+        List<String> expectList1 = new ArrayList<>();
+        expectList1.add("one");
+        expectList1.add("two");
+        expectList1.add("three-one");
+        expectList1.add("two");
+        expectList1.add("three");
+        
+        List<String> expectList2 = new ArrayList<>();
+        expectList2.add("one two\tthree-one");
+        expectList2.add("two three");
+        
+        List<String> expectList3 = new ArrayList<>();
+        expectList3.add("one two\tthree");
+        expectList3.add("one\ntwo three\n");
+        
+        // ACT
+        List<String> actualList1 = RegExp.split(myString);
+        List<String> actualList2 = RegExp.split("[\n]+", myString);
+        List<String> actualList3 = RegExp.split("-", myString);
+        
+        // ASSERT
+        assertEquals("split(myString) ", expectList1, actualList1);
+        assertEquals("split(\"[\\n]+\", myString) ", expectList2, actualList2);
+        assertEquals("split(\"-\", myString) ", expectList3, actualList3);
     }
 
     @Test
