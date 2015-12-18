@@ -209,46 +209,4 @@ public class TestRegExp {
         assertTrue("Should have  PASSED CASE INSENSITIVE regex => " + reCaseInsensitive, RegExp.isMatch(reCaseInsensitive, stringToTest));
         assertTrue("Should have  PASSED CASE SENSISTIVE  regex => " + reCaseSensitive, RegExp.isMatch(reCaseSensitive, stringToTest, CASE_INSENSITIVE));
     }
-
-    
-    
-    /**
-     * Sometimes your test will want to throw Exception to ensure that is does
-     * throw the Exception.
-     */
-    @Test(expected = NullPointerException.class)
-    public void testingExceptionThrown() {
-        this.someMethodThatThrowsExceptionAlways();
-    }
-
-    /**
-     * If a test MUST complete in a certain amount of time, then add timeout.
-     *
-     * NOTE: I am using the Latch.class that I defined in src.main.java.....
-     * Why? multi-thread testing and sleep do not mix. Latch solves this by
-     * allowing us to effectively "sleep"
-     *
-     * @throws InterruptedException
-     */
-    @Test(timeout = 2500)
-    public void testTransactTimeout() throws InterruptedException {
-        Latch l = new Latch(2, 1000); // 2 iterations @ 1000 milliseconds each.
-        l.startLatchCountdown();
-
-        // You can do more stuff here.  Your Test Thread is still running.
-        // I set a timeout of 2.5 seconds and the Latch to 2 seconds.
-        // Change timeout to 1500 and it will fail.
-        l.waitForLatchToComplete();
-
-        // Do some more stuff.
-    }
-
-    /**
-     * This is NOT a test. Just an example method that throws an exception
-     * ALWAYS.
-     */
-    private void someMethodThatThrowsExceptionAlways() {
-        throw new NullPointerException("This is just an example");
-    }
-
 }
