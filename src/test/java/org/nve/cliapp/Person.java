@@ -42,6 +42,7 @@ public class Person {
     }
 
     // http://javarevisited.blogspot.sg/2011/10/override-hashcode-in-java-example.html
+    // http://martinaharris.com/2009/10/testing-java-equals-and-hashcode-methods-essential/
     
     @Override
     public int hashCode() {
