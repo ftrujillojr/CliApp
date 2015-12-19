@@ -18,10 +18,16 @@ import java.util.ArrayList;
 
 public class JsonUtils {
 
+    private static boolean verbose = false;
+
     public JsonUtils() {
     }
-    
-    public static <T> String toJsonPretty(T obj) {
+
+    public static void setVerbose(boolean verbose) {
+        JsonUtils.verbose = verbose;
+    }
+
+    public static <T> String objectToJsonPretty(T obj) {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setPrettyPrinting();
         gsonBuilder.serializeNulls();
@@ -29,8 +35,8 @@ public class JsonUtils {
         String json = gson.toJson(obj);
         return (json);
     }
-    
-    public static <T> String toJsonCompact(T obj) {
+
+    public static <T> String objectToJsonCompact(T obj) {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.serializeNulls();
         Gson gson = gsonBuilder.create();
@@ -48,9 +54,10 @@ public class JsonUtils {
                 throw new JsonUtilsException(msg);
             }
 
-            System.err.println("Reading JSON file => " + file.getCanonicalPath() + "\n");
-            jsonStr = JsonUtils.toCompactFormat(new String(Files.readAllBytes(Paths.get(fileName))));
-            
+            if (verbose) {
+                System.out.println("Reading JSON file => " + file.getCanonicalPath() + "\n");
+            }
+            jsonStr = new String(Files.readAllBytes(Paths.get(fileName)));
         } catch (IOException ex) {
             String msg = "IOExeption from fileName => " + fileName + " for class => " + JsonUtils.class.getName();
             msg += ex.getMessage();
@@ -59,7 +66,6 @@ public class JsonUtils {
         return (jsonStr);
     }
 
-    
     public static void writeJsonToFile(String jsonStr, String fileName) throws JsonUtilsException {
         // write JSON String to file
         File file = new File(fileName);
@@ -74,7 +80,10 @@ public class JsonUtils {
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(file.getAbsoluteFile()))) {
                 bw.write(jsonStr);
             }
-            System.err.println("Wrote JSON to file => " + file.getCanonicalPath() + "\n");
+
+            if (verbose) {
+                System.out.println("Wrote JSON to file => " + file.getCanonicalPath() + "\n");
+            }
         } catch (IOException ex) {
             String msg = "IOExeption from fileName => " + fileName + " for class => " + JsonUtils.class.getName();
             msg += ex.getMessage();
