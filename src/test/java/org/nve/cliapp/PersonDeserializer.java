@@ -54,6 +54,4 @@ public class PersonDeserializer implements JsonDeserializer<Person> {
         // Return object
         return(person);
     }
-
-
 }
