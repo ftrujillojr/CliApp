@@ -1,4 +1,4 @@
-package org.nve.cliapp;
+package org.nve.cliapp_test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.nve.cliapp.CliWrapper;
+import org.nve.cliapp.CliWrapperException;
 //import org.junit.Ignore;
 
 /* To run tests:

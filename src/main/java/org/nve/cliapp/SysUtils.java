@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -19,12 +20,20 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
- * Just a few methods to help with System level stuff.
+ * Just a few methods to help with System level stuff by utilizing standard Java
+ * 1.8 out of the box.
+ *
+ * https://docs.oracle.com/javase/8/docs/api/
+ *
+ *
+ * https://docs.oracle.com/javase/8/docs/api/java/nio/file/Files.html
  *
  */
 public final class SysUtils {
@@ -45,6 +54,9 @@ public final class SysUtils {
     }
 
     private static final Map<String, String> env = System.getenv();
+    private static String fileNameRegExp = ".*";
+    private static Map<String, BasicFileAttributes> fileMap = new LinkedHashMap<>();
+    private static Map<String, BasicFileAttributes> dirMap = new LinkedHashMap<>();
 
     public SysUtils() {
     }
@@ -54,8 +66,8 @@ public final class SysUtils {
      *
      * If none, then returns empty String.
      *
-     * @param key //
-     * @return String //
+     * @param key Env index
+     * @return String
      */
     public static String getEnv(String key) {
         String val = "";
@@ -67,9 +79,9 @@ public final class SysUtils {
 
     /**
      * Return a Set of SysUtils.Perms for a given file or dir name string.
-     * 
-     * @param fileOrDirName
-     * @return 
+     *
+     * @param fileOrDirName Just a filename or dirname.
+     * @return Set of SysUtils.Perms
      */
     public static Set<Perms> getPerms(String fileOrDirName) {
         Set<Perms> perms = EnumSet.noneOf(Perms.class);
@@ -89,23 +101,34 @@ public final class SysUtils {
         return perms;
     }
 
+    /**
+     * Input => /home/ftrujillo/filename.txt Output => filename.ext
+     *
+     * @param fullPath See input
+     * @return See output
+     */
     public static String getBaseName(String fullPath) {
         File fileObj = new File(fullPath);
         String baseName = fileObj.getName(); // Java has built-in functions to get the basename and dirname for a given file path, but the function names are not so self-apparent
         return (baseName);
     }
 
+    /**
+     * Input => /home/ftrujillo/filename.txt Output => /home/ftrujillo
+     *
+     * @param fullPath see input
+     * @return see output
+     */
     public static String getDirName(String fullPath) {
         File fileObj = new File(fullPath);
         String dirName = fileObj.getParent(); // Java has built-in functions to get the basename and dirname for a given file path, but the function names are not so self-apparent
         return (dirName);
     }
-    
 
     /**
      * Remove file if it exists.
      *
-     * @param filename
+     * @param filename A string
      */
     public static void rmFile(String filename) {
         File fileObj = new File(filename);
@@ -114,31 +137,33 @@ public final class SysUtils {
             fileObj.delete();
         }
     }
-    
+
     /**
      * http://www.javaworld.com/article/2928805/core-java/nio-2-cookbook-part-3.html
      *
-     * @return
+     * @return FileVisitor&lt&Path&gt;
      */
     private static FileVisitor<Path> getFileVisitor() {
         class DirVisitor<Path> extends SimpleFileVisitor<Path> {
 
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-                if (RegExp.isMatch(".*[\\\\ \\\\/]\\.git$|.*.svn$|.*CVS$", dir.toString())) {
+                // Do not walk down repository or NetApp snapshots.
+                // [/\\\\]  matches BOTH Unix and Windows separators.
+                if (RegExp.isMatch(".*[/\\\\].git$|.*[/\\\\].svn$|.*[/\\\\]CVS$|.*[/\\\\].snapshot$|.*[/\\\\].ssh$|.*[/\\\\].m2$|.*[/\\\\]CPAN$|.*[/\\\\].hg|.*[/\\\\]SCCS$$", dir.toString())) {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
-
-                System.out.format("%s [Directory]%n", dir);
+//                System.out.format("%s [Directory]%n", dir);
+                SysUtils.dirMap.put(dir.toString(), attrs);
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                String basename = getBaseName(file.toString());
-                String dirname = getDirName(file.toString());
-                System.out.println("\nbasename " + basename + "\ndirname " + dirname + "\n");
-                //System.out.format("%s [File,  Size: %s  bytes]%n", file, attrs.size());
+//                  System.out.format("%s [File,  Size: %s  bytes]%n", file, attrs.size());
+                if(RegExp.isMatch(fileNameRegExp, file.toString())) {
+                    SysUtils.fileMap.put(file.toString(), attrs);
+                }
                 return FileVisitResult.CONTINUE;
             }
 
@@ -146,8 +171,7 @@ public final class SysUtils {
             @Override
             public FileVisitResult visitFileFailed(Path file, IOException e)
                     throws IOException {
-                System.err.printf("Visiting failed for %s\n", file);
-
+                System.err.printf("WARNING: Directory or file access is restricted for => %s\n", file);
                 return FileVisitResult.SKIP_SUBTREE;
             }
         }
@@ -155,11 +179,26 @@ public final class SysUtils {
         return visitor;
     }
 
-    public static List<String> ffind(Path startPath, String matchString) throws IOException {
+    public static List<String> ffind(Path startPath, String fileRegEx) throws IOException {
+        SysUtils.dirMap.clear();
+        SysUtils.fileMap.clear();
         ArrayList<String> results = new ArrayList<>();
-        FileVisitor<Path> visitor = getFileVisitor();
-        Files.walkFileTree(startPath, visitor);
 
+        Set<FileVisitOption> fileVisitOptions = new TreeSet<>();
+        //fileVisitOptions.add(FileVisitOption.FOLLOW_LINKS); // this is the only option right now. Might be more someday.
+
+        int maxDepth = 3;  // MAX_VALUE is all directories,  0 is top only.
+
+        FileVisitor<Path> visitor = getFileVisitor();
+
+        if (fileRegEx != null && !fileRegEx.isEmpty()) {
+            SysUtils.fileNameRegExp = fileRegEx;
+        }
+        Path walkFileTree = Files.walkFileTree(
+                startPath,
+                fileVisitOptions,
+                maxDepth,
+                visitor);
         return (results);
     }
 
@@ -176,7 +215,7 @@ public final class SysUtils {
             System.out.println(t.toString());
         }
     }
-    
+
     /**
      * Uses System property os.name to determine if running on Linux.
      *

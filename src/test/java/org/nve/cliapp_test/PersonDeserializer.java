@@ -1,4 +1,4 @@
-package org.nve.cliapp;
+package org.nve.cliapp_test;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

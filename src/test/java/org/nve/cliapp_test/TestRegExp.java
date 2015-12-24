@@ -1,4 +1,4 @@
-package org.nve.cliapp;
+package org.nve.cliapp_test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,7 @@ import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.nve.cliapp.RegExp;
 import static org.junit.Assert.*;
 
 /* To run tests:

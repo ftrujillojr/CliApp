@@ -1,4 +1,4 @@
-package org.nve.cliapp;
+package org.nve.cliapp_test;
 
 // junit.framework.Test package is the legacy namespace used with Junit v3 and older versions of Java that do not support annotations.
 // org.junit.Test is the new namespace used by JUnit v4 and requires Java v1.5 or later for its annotations.
@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.nve.cliapp.SysUtils;
 import static org.junit.Assert.*;
 //import org.junit.Ignore;
 
@@ -105,6 +106,7 @@ public class TestSysUtils {
 
     /**
      * Give your test methods meaningful names.
+     * @throws java.io.IOException
      */
     @Test
     public void testListDir() throws IOException {

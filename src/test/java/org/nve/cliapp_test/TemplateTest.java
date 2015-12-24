@@ -1,10 +1,11 @@
-package org.nve.cliapp;
+package org.nve.cliapp_test;
 
 // junit.framework.Test package is the legacy namespace used with Junit v3 and older versions of Java that do not support annotations.
 // org.junit.Test is the new namespace used by JUnit v4 and requires Java v1.5 or later for its annotations.
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.nve.cliapp.Latch;
 import static org.junit.Assert.*;
 //import org.junit.Ignore;
 
