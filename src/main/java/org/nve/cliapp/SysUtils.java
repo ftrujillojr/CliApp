@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import static java.lang.Integer.MAX_VALUE;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -161,7 +162,8 @@ public final class SysUtils {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
 //                  System.out.format("%s [File,  Size: %s  bytes]%n", file, attrs.size());
-                if(RegExp.isMatch(fileNameRegExp, file.toString())) {
+                String basename = getBaseName(file.toString());
+                if(RegExp.isMatch(fileNameRegExp, basename)) {
                     SysUtils.fileMap.put(file.toString(), attrs);
                 }
                 return FileVisitResult.CONTINUE;
@@ -179,27 +181,25 @@ public final class SysUtils {
         return visitor;
     }
 
-    public static List<String> ffind(Path startPath, String fileRegEx) throws IOException {
+    public static Map<String, BasicFileAttributes> ffind(Path startPath, String fileRegEx) throws IOException {
         SysUtils.dirMap.clear();
         SysUtils.fileMap.clear();
-        ArrayList<String> results = new ArrayList<>();
-
         Set<FileVisitOption> fileVisitOptions = new TreeSet<>();
-        //fileVisitOptions.add(FileVisitOption.FOLLOW_LINKS); // this is the only option right now. Might be more someday.
-
-        int maxDepth = 3;  // MAX_VALUE is all directories,  0 is top only.
-
+        fileVisitOptions.add(FileVisitOption.FOLLOW_LINKS); // this is the only option right now. Might be more someday.
+        int maxDepth = MAX_VALUE;  // MAX_VALUE is all directories,  0 is top only.
         FileVisitor<Path> visitor = getFileVisitor();
 
         if (fileRegEx != null && !fileRegEx.isEmpty()) {
             SysUtils.fileNameRegExp = fileRegEx;
         }
+        
         Path walkFileTree = Files.walkFileTree(
                 startPath,
                 fileVisitOptions,
                 maxDepth,
                 visitor);
-        return (results);
+        
+        return (SysUtils.fileMap);
     }
 
     /**
@@ -216,6 +216,15 @@ public final class SysUtils {
         }
     }
 
+    public static void displayFileMap(Map<String, BasicFileAttributes> map) {
+        Iterator<String> itr = map.keySet().iterator();
+        while (itr.hasNext()) {
+            String filename = itr.next();
+            System.out.println(filename);
+        }
+    }
+    
+    
     /**
      * Uses System property os.name to determine if running on Linux.
      *
