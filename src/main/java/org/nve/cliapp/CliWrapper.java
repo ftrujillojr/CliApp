@@ -24,8 +24,8 @@ import org.apache.commons.cli.ParseException;
  * https://commons.apache.org/proper/commons-cli/javadocs/api-release/org/apache/commons/cli/package-tree.html
  *
  */
-public class CliWrapper {
-
+@SuppressWarnings("FieldMayBeFinal")
+public class  CliWrapper {
     private Options options;
     private List<Option> optionList;
     private CommandLineParser parser;

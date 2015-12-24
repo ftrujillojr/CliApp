@@ -109,7 +109,7 @@ public class TestSysUtils {
     @Test
     public void testListDir() throws IOException {
         
-        List<String> dirList2 = SysUtils.ffind(Paths.get(SysUtils.getEnv("HOME"), "bin"), "");
+        List<String> dirList2 = SysUtils.ffind(Paths.get(SysUtils.getEnv("HOME")), "");
         System.out.println("========================================");
         SysUtils.displayList(dirList2);
         

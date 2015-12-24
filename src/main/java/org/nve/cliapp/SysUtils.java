@@ -10,29 +10,41 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.DirectoryIteratorException;
-import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Set;
 
-/*
- * SVN information
- * $Revision:$
- * $Author:$
- * $Date:$
- * $HeadURL:$
+/**
+ * Just a few methods to help with System level stuff.
  *
  */
-public class SysUtils {
+public final class SysUtils {
 
-    private static Map<String, String> env = System.getenv();
+    public enum Perms {
+
+        READ(4), WRITE(2), EXECUTE(1);
+
+        private final int value;
+
+        private Perms(final int v) {
+            value = v;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
+    private static final Map<String, String> env = System.getenv();
 
     public SysUtils() {
     }
@@ -53,19 +65,100 @@ public class SysUtils {
         return (val);
     }
 
-    public static List<String> ffind(Path start, String matchString) throws IOException {
-        ArrayList<String> results = new ArrayList<>();
+    /**
+     * Return a Set of SysUtils.Perms for a given file or dir name string.
+     * 
+     * @param fileOrDirName
+     * @return 
+     */
+    public static Set<Perms> getPerms(String fileOrDirName) {
+        Set<Perms> perms = EnumSet.noneOf(Perms.class);
 
-        int maxDepth = 5;
-        try (Stream<Path> stream = Files.walk(start, maxDepth)) {
-            String joined = stream
-                    .map(String::valueOf)
-//                    .filter(path -> path.endsWith(".js"))
-                    .sorted()
-                    .collect(Collectors.joining("\n"));
-            System.out.println("walk(): " + joined);
+        File f = new File(fileOrDirName);
+        if (f.exists()) {
+            if (f.canWrite()) {
+                perms.add(Perms.WRITE);
+            }
+            if (f.canRead()) {
+                perms.add(Perms.READ);
+            }
+            if (f.canExecute()) {
+                perms.add(Perms.EXECUTE);
+            }
         }
-        
+        return perms;
+    }
+
+    public static String getBaseName(String fullPath) {
+        File fileObj = new File(fullPath);
+        String baseName = fileObj.getName(); // Java has built-in functions to get the basename and dirname for a given file path, but the function names are not so self-apparent
+        return (baseName);
+    }
+
+    public static String getDirName(String fullPath) {
+        File fileObj = new File(fullPath);
+        String dirName = fileObj.getParent(); // Java has built-in functions to get the basename and dirname for a given file path, but the function names are not so self-apparent
+        return (dirName);
+    }
+    
+
+    /**
+     * Remove file if it exists.
+     *
+     * @param filename
+     */
+    public static void rmFile(String filename) {
+        File fileObj = new File(filename);
+
+        if (fileObj.exists() && fileObj.isFile()) {
+            fileObj.delete();
+        }
+    }
+    
+    /**
+     * http://www.javaworld.com/article/2928805/core-java/nio-2-cookbook-part-3.html
+     *
+     * @return
+     */
+    private static FileVisitor<Path> getFileVisitor() {
+        class DirVisitor<Path> extends SimpleFileVisitor<Path> {
+
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+                if (RegExp.isMatch(".*[\\\\ \\\\/]\\.git$|.*.svn$|.*CVS$", dir.toString())) {
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+
+                System.out.format("%s [Directory]%n", dir);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                String basename = getBaseName(file.toString());
+                String dirname = getDirName(file.toString());
+                System.out.println("\nbasename " + basename + "\ndirname " + dirname + "\n");
+                //System.out.format("%s [File,  Size: %s  bytes]%n", file, attrs.size());
+                return FileVisitResult.CONTINUE;
+            }
+
+            // http://www.technojeeves.com/index.php/9-freebies/82-accessdeniedexception-with-filevisitor-in-java
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException e)
+                    throws IOException {
+                System.err.printf("Visiting failed for %s\n", file);
+
+                return FileVisitResult.SKIP_SUBTREE;
+            }
+        }
+        FileVisitor<Path> visitor = new DirVisitor<>();
+        return visitor;
+    }
+
+    public static List<String> ffind(Path startPath, String matchString) throws IOException {
+        ArrayList<String> results = new ArrayList<>();
+        FileVisitor<Path> visitor = getFileVisitor();
+        Files.walkFileTree(startPath, visitor);
 
         return (results);
     }
@@ -83,20 +176,7 @@ public class SysUtils {
             System.out.println(t.toString());
         }
     }
-
-    /**
-     * Remove file if it exists.
-     *
-     * @param filename
-     */
-    public static void rmFile(String filename) {
-        File fileObj = new File(filename);
-
-        if (fileObj.exists() && fileObj.isFile()) {
-            fileObj.delete();
-        }
-    }
-
+    
     /**
      * Uses System property os.name to determine if running on Linux.
      *
@@ -194,7 +274,7 @@ public class SysUtils {
     }
 
     /**
-     * Write List of Strings to a UTF8 encoded text file.
+     * Write List of Strings to an encoded text file.
      *
      * encoding can be => ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
      *
@@ -206,7 +286,7 @@ public class SysUtils {
      * @throws java.io.UnsupportedEncodingException
      * @throws java.io.IOException
      */
-    public static void writeTextFileUTF8(String filename, List<String> listStrings, String encoding, boolean appendToFile) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+    public static void writeTextFile(String filename, List<String> listStrings, String encoding, boolean appendToFile) throws FileNotFoundException, UnsupportedEncodingException, IOException {
         // Try with resources will close the Buffered Writer in all events.  Java 1.7+
         try (BufferedWriter writer = new BufferedWriter(getBufferedWriterInstance(filename, encoding, appendToFile))) {
             for (int ii = 0; ii < listStrings.size(); ii++) {
