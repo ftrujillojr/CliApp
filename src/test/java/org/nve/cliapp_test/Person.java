@@ -1,4 +1,4 @@
-package org.nve.cliapp;
+package org.nve.cliapp_test;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -8,6 +8,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.nve.cliapp.JsonUtilsException;
 
 /*
  * SVN information

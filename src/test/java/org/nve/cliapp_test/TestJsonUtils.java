@@ -1,4 +1,4 @@
-package org.nve.cliapp;
+package org.nve.cliapp_test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -8,6 +8,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.nve.cliapp.JsonUtils;
+import org.nve.cliapp.JsonUtilsException;
 
 /*   ARRANGE    ACT    ASSERT
 

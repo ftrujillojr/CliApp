@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 *~
 .snapshot/
 *.pyc
@@ -43,3 +44,6 @@ _ReSharper*/
 [Tt]est[Rr]esult*
 *.vssscc
 $tf*/
+=======
+/target/
+>>>>>>> e43819977fa41823afe83ebba40d52e8ebffff42

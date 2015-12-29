@@ -1,11 +1,15 @@
-package org.nve.cliapp;
+package org.nve.cliapp_test;
 
 // junit.framework.Test package is the legacy namespace used with Junit v3 and older versions of Java that do not support annotations.
 // org.junit.Test is the new namespace used by JUnit v4 and requires Java v1.5 or later for its annotations.
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Map;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.nve.cliapp.SysUtils;
 //import org.junit.Ignore;
 
 /*   ARRANGE    ACT    ASSERT
@@ -30,7 +34,7 @@ import static org.junit.Assert.*;
 
 /**
  * <pre>
- * http://junit.org/javadoc/latest/index.html     (JUnit must be >= 4.11)
+ * http://junit.org/javadoc/latest/index.html     (JUnit must be &gt;= 4.11)
  * 
  * assertArrayEquals(String msg,    **[] expect,   **[] actual)
  *      assertEquals(String msg,    ** expect,     ** actual)
@@ -41,7 +45,7 @@ import static org.junit.Assert.*;
  *     assertNotSame(String msg,    Object unexpected, Object actual)
  *        assertNull(String msg,    Object object)
  *        assertSame(String msg,    Object expected, Object actual)
- *        assertThat(String reason, T actual, Match<T> matcher)
+ *        assertThat(String reason, T actual, Match&lt;T&gt; matcher)
  *              fail()
  *              fail(String msg)
  * 
@@ -68,7 +72,7 @@ import static org.junit.Assert.*;
  * 
  * </pre>
  */
-public class TemplateTest {
+public class TestSysUtils {
     
     private static String someString;   // If needed, declare here and use setUpClass() to initialize.
     
@@ -78,7 +82,7 @@ public class TemplateTest {
      * 
      * The reason is the stack crashes if first test fails to instantiate.
      */    
-    public TemplateTest() {
+    public TestSysUtils() {
         // Best practice => Do not put anything here.
     }
 
@@ -102,51 +106,14 @@ public class TemplateTest {
 
     /**
      * Give your test methods meaningful names.
+     * @throws java.io.IOException
      */
     @Test
-    //@Ignore
-    public void ensureStaticStringInitialized() {
-        assertEquals("Hello World", someString);
+    public void testListDir() throws IOException {
+        Map<String, BasicFileAttributes> fileMap = SysUtils.ffind(Paths.get(SysUtils.getEnv("HOME")), ".*\\.js$");
+        System.out.println("========================================");
+        SysUtils.displayFileMap(fileMap);
     }
     
-    /**
-     * Sometimes your test will want to throw Exception to ensure that is does
-     * throw the Exception.
-     */
-    @Test(expected = NullPointerException.class)
-    public void testingExceptionThrown() {
-        this.someMethodThatThrowsExceptionAlways();
-    }
-    
-    /**
-     * If a test MUST complete in a certain amount of time, then add timeout.
-     * 
-     * NOTE: I am using the Latch.class that I defined in src.main.java.....
-     *       Why?  multi-thread testing and sleep do not mix.  
-     *       Latch solves this by allowing us to effectively "sleep"
-     * 
-     * @throws InterruptedException 
-     */
-    
-    @Test(timeout = 2500)
-    public void testTransactTimeout() throws InterruptedException {
-        Latch l = new Latch(2, 1000); // 2 iterations @ 1000 milliseconds each.
-        l.startLatchCountdown();
-
-        // You can do more stuff here.  Your Test Thread is still running.
-        // I set a timeout of 2.5 seconds and the Latch to 2 seconds.
-        // Change timeout to 1500 and it will fail.
-        l.waitForLatchToComplete();
-
-        // Do some more stuff.
-    }    
-    
-    /**
-     * This is NOT a test.  
-     * Just an example method that throws an exception ALWAYS.
-     */
-    private void someMethodThatThrowsExceptionAlways() {
-        throw new NullPointerException("This is just an example");
-    }
     
 }
