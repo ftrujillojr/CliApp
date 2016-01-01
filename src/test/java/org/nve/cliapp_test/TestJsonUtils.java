@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -165,5 +166,18 @@ public class TestJsonUtils {
         // ASSERT - Person.java has override on equals() and hashCode()
         // http://javarevisited.blogspot.com/2011/02/how-to-write-equals-method-in-java.html
         assertTrue(expectList.equals(actualList));
+    }
+    
+    @Test 
+    public void testIsValidJson() {
+        // ARRANGE
+        String validJson = "[{\"firstName\":\"Elmer\",\"lastName\":\"Fudd\"}]";
+        String invalidJson = "[{\"firstName\":\"Elmer\",\"lastName\":\"Fudd\"]";  // has missing curly brace after lastName attribute value
+        // ACT
+        boolean shouldBeValid = JsonUtils.isValidJson(validJson);
+        boolean shouldNotBeValid = JsonUtils.isValidJson(invalidJson);
+        // ASSERT
+        assertTrue(shouldBeValid);
+        assertFalse(shouldNotBeValid);
     }
 }

@@ -15,6 +15,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class JsonUtils {
 
@@ -25,7 +27,8 @@ public class JsonUtils {
 
     /**
      * Set this if you want to see more info.
-     * @param verbose 
+     *
+     * @param verbose
      */
     public static void setVerbose(boolean verbose) {
         JsonUtils.verbose = verbose;
@@ -33,10 +36,10 @@ public class JsonUtils {
 
     /**
      * Convert a simple Object to JSON in human readable form
-     * 
+     *
      * @param <T>
      * @param obj
-     * @return 
+     * @return
      */
     public static <T> String objectToJsonPretty(T obj) {
         GsonBuilder gsonBuilder = new GsonBuilder();
@@ -49,10 +52,10 @@ public class JsonUtils {
 
     /**
      * Convert a simple Object to JSON in compact form.
-     * 
+     *
      * @param <T>
      * @param obj
-     * @return 
+     * @return
      */
     public static <T> String objectToJsonCompact(T obj) {
         GsonBuilder gsonBuilder = new GsonBuilder();
@@ -63,11 +66,27 @@ public class JsonUtils {
     }
 
     /**
-     * This method will read JSON from a file, removing \r\n if on Windows and replacing with \n only.
-     * 
+     * Quick check if JSON string is valid.
+     *
+     * @param jsonString
+     * @return
+     */
+    public static boolean isValidJson(String jsonString) {
+        try {
+            new JsonParser().parse(jsonString);
+            return true;
+        } catch (JsonSyntaxException jse) {
+            return false;
+        }
+    }
+
+    /**
+     * This method will read JSON from a file, removing \r\n if on Windows and
+     * replacing with \n only.
+     *
      * @param fileName
      * @return
-     * @throws JsonUtilsException 
+     * @throws JsonUtilsException
      */
     public static String readJsonFromFile(String fileName) throws JsonUtilsException {
         String jsonStr = null;
@@ -85,12 +104,12 @@ public class JsonUtils {
             String line;
             StringBuilder sb = new StringBuilder();
             // BufferedReader removes \r\n and \n with readLine().
-            try(BufferedReader br = new BufferedReader(new FileReader(file.getAbsoluteFile()))) {
-                while((line = br.readLine()) != null) {
+            try (BufferedReader br = new BufferedReader(new FileReader(file.getAbsoluteFile()))) {
+                while ((line = br.readLine()) != null) {
                     sb.append(line).append("\n"); // here I replace the newline with Unix style.
                 }
                 jsonStr = sb.toString();  // set the return string
-                jsonStr = jsonStr.replaceAll("[\n]+$", "");  // remove newlines at end always.
+                jsonStr = jsonStr.replaceAll("[ \t\n]+$", "");  // remove whitespace at end always.
             }
         } catch (IOException ex) {
             String msg = "IOExeption from fileName => " + fileName + " for class => " + JsonUtils.class.getName();
@@ -102,10 +121,10 @@ public class JsonUtils {
 
     /**
      * Write JSON string verbatim to a file.
-     * 
+     *
      * @param jsonStr
      * @param fileName
-     * @throws JsonUtilsException 
+     * @throws JsonUtilsException
      */
     public static void writeJsonToFile(String jsonStr, String fileName) throws JsonUtilsException {
         // write JSON String to file
@@ -132,12 +151,12 @@ public class JsonUtils {
         }
     }
 
-    /** 
+    /**
      * Convert a JSON string to human readable format.
-     * 
+     *
      * @param jsonString
      * @return
-     * @throws JsonUtilsException 
+     * @throws JsonUtilsException
      */
     public static String toPrettyFormat(String jsonString) throws JsonUtilsException {
         String prettyJson = "";
@@ -175,10 +194,10 @@ public class JsonUtils {
 
     /**
      * Convert JSON string by removing all newlines and white space not quoted.
-     * 
+     *
      * @param jsonString
      * @return
-     * @throws JsonUtilsException 
+     * @throws JsonUtilsException
      */
     public static String toCompactFormat(String jsonString) throws JsonUtilsException {
         String compactJson;
