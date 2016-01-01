@@ -37,6 +37,7 @@ import java.util.TreeSet;
  * https://docs.oracle.com/javase/8/docs/api/java/nio/file/Files.html
  *
  */
+@SuppressWarnings("FieldMayBeFinal")
 public final class SysUtils {
 
     public enum Perms {
@@ -54,14 +55,13 @@ public final class SysUtils {
         }
     }
 
-    private static final Map<String, String> env = System.getenv();
+    private static Map<String, String> env = System.getenv();
     private static String fileNameRegExp = ".*";
     private static Map<String, BasicFileAttributes> fileMap = new LinkedHashMap<>();
     private static Map<String, BasicFileAttributes> dirMap = new LinkedHashMap<>();
 
     public SysUtils() {
     }
-    
     
     public static String getTmpDir() {
         if(SysUtils.isLinux()) {
