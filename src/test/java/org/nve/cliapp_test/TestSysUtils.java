@@ -74,8 +74,6 @@ import org.nve.cliapp.SysUtils;
  */
 public class TestSysUtils {
     
-    private static String someString;   // If needed, declare here and use setUpClass() to initialize.
-    
     /**
      * Do not use the constructor to set up a test case. 
      * Use setupClass() method below. 
@@ -93,7 +91,6 @@ public class TestSysUtils {
      */
     @BeforeClass
     public static void setUpClass() {
-        someString = "Hello World";
     }
 
     /**
@@ -102,7 +99,6 @@ public class TestSysUtils {
     @AfterClass
     public static void tearDownClass() {
     }
-
 
     /**
      * Give your test methods meaningful names.

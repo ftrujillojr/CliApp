@@ -7,8 +7,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -57,7 +59,14 @@ public class JsonUtils {
             if (verbose) {
                 System.out.println("Reading JSON file => " + file.getCanonicalPath() + "\n");
             }
-            jsonStr = new String(Files.readAllBytes(Paths.get(fileName)));
+            String line;
+            StringBuilder sb = new StringBuilder();
+            try(BufferedReader br = new BufferedReader(new FileReader(file.getAbsoluteFile()))) {
+                while((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+                jsonStr = sb.toString();
+            }
         } catch (IOException ex) {
             String msg = "IOExeption from fileName => " + fileName + " for class => " + JsonUtils.class.getName();
             msg += ex.getMessage();

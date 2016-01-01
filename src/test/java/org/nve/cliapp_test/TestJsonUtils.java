@@ -1,15 +1,17 @@
 package org.nve.cliapp_test;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.nve.cliapp.JsonUtils;
 import org.nve.cliapp.JsonUtilsException;
+import org.nve.cliapp.RegExp;
+import org.nve.cliapp.SysUtils;
 
 /*   ARRANGE    ACT    ASSERT
 
@@ -111,15 +113,16 @@ public class TestJsonUtils {
         String expect = "[{\"firstName\":\"Wiley\",\"lastName\":\"Coyote\",\"age\":80,\"salary\":1.1,\"isStudent\":false},{\"firstName\":\"Road\",\"lastName\":\"Runner\",\"age\":81,\"salary\":100.23,\"isStudent\":false},{\"firstName\":\"Bugs\",\"lastName\":\"Bunny\",\"age\":100,\"salary\":5436.34,\"isStudent\":true}]";
         assertEquals(expect, actual);
 
+        String tmpDir = SysUtils.getTmpDir();
         String pretty = JsonUtils.toPrettyFormat(actual);
-        JsonUtils.writeJsonToFile(actual, "/tmp/compact.json");
-        JsonUtils.writeJsonToFile(pretty, "/tmp/pretty.json");
+        JsonUtils.writeJsonToFile(actual, tmpDir + "/compact.json");
+        JsonUtils.writeJsonToFile(pretty, tmpDir + "/pretty.json");
 
-        String readCompact = JsonUtils.readJsonFromFile("/tmp/compact.json");
+        String readCompact = JsonUtils.readJsonFromFile(tmpDir + "/compact.json");
         String readCompactExpect = JsonUtils.readJsonFromFile("./src/test/resources/compact.json");
         assertEquals(readCompactExpect, readCompact);
 
-        String readPretty = JsonUtils.readJsonFromFile("/tmp/pretty.json");
+        String readPretty = JsonUtils.readJsonFromFile(tmpDir + "/pretty.json");
         String readPrettyExpect = JsonUtils.readJsonFromFile("./src/test/resources/pretty.json");
         assertEquals(readPrettyExpect, readPretty);
 

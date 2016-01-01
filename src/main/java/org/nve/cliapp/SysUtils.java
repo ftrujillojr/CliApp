@@ -61,6 +61,15 @@ public final class SysUtils {
 
     public SysUtils() {
     }
+    
+    
+    public static String getTmpDir() {
+        if(SysUtils.isLinux()) {
+            return("/tmp");
+        } else {
+            return("/tmp");
+        }
+    }
 
     /**
      * Returns the env value for a given key.
