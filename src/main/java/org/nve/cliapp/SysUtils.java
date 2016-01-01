@@ -1,5 +1,6 @@
 package org.nve.cliapp;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import static java.lang.Integer.MAX_VALUE;
 import java.nio.file.FileVisitOption;
@@ -16,9 +18,12 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -59,15 +64,18 @@ public final class SysUtils {
     private static String fileNameRegExp = ".*";
     private static Map<String, BasicFileAttributes> fileMap = new LinkedHashMap<>();
     private static Map<String, BasicFileAttributes> dirMap = new LinkedHashMap<>();
+    private static int lastSystemStatus = 0;
+    private static PrintStream savedStdout = System.out;
+    private static PrintStream savedStderr = System.err;
 
     public SysUtils() {
     }
-    
+
     public static String getTmpDir() {
-        if(SysUtils.isLinux()) {
-            return("/tmp");
+        if (SysUtils.isLinux()) {
+            return ("/tmp");
         } else {
-            return("/tmp");
+            return ("/tmp");
         }
     }
 
@@ -149,6 +157,158 @@ public final class SysUtils {
     }
 
     /**
+     * Similar to Linux /bin/mkdir -p. It will create recursively all
+     * directories needed to the new dirname
+     *
+     * @param dirname //
+     * @return boolean //
+     */
+    public static boolean mkdir_p(String dirname) {
+        boolean status = false;
+
+        File fileObj = new File(dirname);
+        if (fileObj.exists() == false) {
+            status = fileObj.mkdirs();
+        }
+
+        return (status);
+    }
+
+    public static List<String> system(String command) throws SysUtilsException {
+        String[] linuxCmd = {"/bin/csh", "-c", command};
+
+        ArrayList<String> results = new ArrayList<>();
+        String line;
+        try {
+            Process proc;
+
+            if (SysUtils.isLinux()) {
+                proc = Runtime.getRuntime().exec(linuxCmd);
+            } else {
+                proc = Runtime.getRuntime().exec(command, null, null);
+            }
+
+            try (BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+                while ((line = stdInput.readLine()) != null) {
+                    results.add(line);
+                }
+            }
+
+            try (BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+                while ((line = stdError.readLine()) != null) {
+                    results.add(line);
+                }
+            }
+
+            proc.waitFor();  // waits until process terminates.
+            int retStatus = proc.exitValue();
+            lastSystemStatus = retStatus;
+
+        } catch (IOException | InterruptedException ex) {
+            String msg = "ERROR: tried to run system() on => " + command;
+            msg += ex.getMessage();
+            throw new SysUtilsException(msg);
+        }
+        return results;
+    }
+
+    public static void redirectStdout(String filename, Boolean append) {
+        if (filename.isEmpty() == false) {
+            try {
+                System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream(filename, append)), true));
+            } catch (FileNotFoundException ex) {
+                System.err.println("WARNING: Unable to redirectStdout to filename => " + filename);
+                System.setOut(savedStdout);
+            }
+        }
+    }
+
+    public static void restoreStdout() {
+        if (System.out != savedStdout) {
+            // We were writing to a file.
+            System.out.flush();
+            System.out.close();
+        }
+        System.setOut(savedStdout);
+    }
+
+    public static String formatDoubleToString(Double value) {
+        DecimalFormat df = new DecimalFormat("#.0000");
+        String result = df.format(value);
+        return result;
+    }
+
+    public static String getEpochAsString() {
+        return formatDoubleToString(SysUtils.getEpochAsDouble());
+    }
+
+    public static Double getEpochAsDouble() {
+        Date mydate = new Date();
+        long epoch = mydate.getTime(); // returns milliseconds, need to / 1000
+        Double result = (epoch / 1000.0);
+        return result;
+    }
+
+    public static String epochToAsciiDate(String strEpoch) {
+        Double dbEpoch = Double.parseDouble(strEpoch);
+        Date myDate = new Date((dbEpoch.longValue() * 1000));
+        return myDate.toString();
+    }
+
+    public static String epochToAsciiDate(double epoch) {
+        @SuppressWarnings("UnnecessaryBoxing")
+        Double dbEpoch = new Double(epoch);
+        Date myDate = new Date((dbEpoch.longValue() * 1000));
+        return myDate.toString();
+    }
+
+    public static Double atof(String mydouble) {
+        Double result = Double.parseDouble(mydouble);
+        return result;
+    }
+
+    public static Integer atoi(String value) {
+        Integer result = Integer.parseInt(value);
+        return (result);
+    }
+
+    public String itoa(int value) {
+        String result = Integer.toString(value);
+        return (result);
+    }
+
+    public static Path getCwd() {
+        String workingDir = System.getProperty("user.dir");
+        Path path = Paths.get(workingDir);
+        return (path);
+    }
+
+    public Path getHome() {
+        String home;
+
+        if (SysUtils.isWindows()) {
+            if (SysUtils.env.containsKey("USERPROFILE")) {
+                Path tmpPath = Paths.get(SysUtils.getEnv("USERPROFILE"), "Documents");
+                home = tmpPath.toString();
+            } else if (SysUtils.env.containsKey("HOME")) {
+                home = SysUtils.getEnv("HOME");
+            } else if (SysUtils.env.containsKey("HOMEDRIVE") && SysUtils.env.containsKey("HOMEPATH")) {
+                home = String.format("%s%s", SysUtils.getEnv("HOMEDRIVE"), SysUtils.getEnv("HOMEPATH"));
+            } else {
+                home = "C:\\TEMP";
+            }
+        } else if (SysUtils.isLinux()) {
+            home = SysUtils.getEnv("HOME");
+        } else {
+            home = System.getProperty("user.home");  // This is where your application starts up.
+        }
+
+        Path path = Paths.get(home);
+        return (path);
+    }
+
+    
+    /**
      * http://www.javaworld.com/article/2928805/core-java/nio-2-cookbook-part-3.html
      *
      * @return FileVisitor&lt&Path&gt;
@@ -172,7 +332,7 @@ public final class SysUtils {
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
 //                  System.out.format("%s [File,  Size: %s  bytes]%n", file, attrs.size());
                 String basename = getBaseName(file.toString());
-                if(RegExp.isMatch(fileNameRegExp, basename)) {
+                if (RegExp.isMatch(fileNameRegExp, basename)) {
                     SysUtils.fileMap.put(file.toString(), attrs);
                 }
                 return FileVisitResult.CONTINUE;
@@ -201,13 +361,13 @@ public final class SysUtils {
         if (fileRegEx != null && !fileRegEx.isEmpty()) {
             SysUtils.fileNameRegExp = fileRegEx;
         }
-        
+
         Path walkFileTree = Files.walkFileTree(
                 startPath,
                 fileVisitOptions,
                 maxDepth,
                 visitor);
-        
+
         return (SysUtils.fileMap);
     }
 
@@ -232,8 +392,7 @@ public final class SysUtils {
             System.out.println(filename);
         }
     }
-    
-    
+
     /**
      * Uses System property os.name to determine if running on Linux.
      *
