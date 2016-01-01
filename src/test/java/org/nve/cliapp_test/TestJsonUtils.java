@@ -6,11 +6,9 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.nve.cliapp.JsonUtils;
 import org.nve.cliapp.JsonUtilsException;
-import org.nve.cliapp.RegExp;
 import org.nve.cliapp.SysUtils;
 
 /*   ARRANGE    ACT    ASSERT
@@ -72,9 +70,11 @@ import org.nve.cliapp.SysUtils;
  *
  * </pre>
  */
+@SuppressWarnings("FieldMayBeFinal")
 public class TestJsonUtils {
 
     private static List<Person> personList = new ArrayList<>();
+    private static String tmpDir;
 
     /**
      * Do not use the constructor to set up a test case. Use setupClass() method
@@ -93,11 +93,11 @@ public class TestJsonUtils {
      */
     @BeforeClass
     public static void setUpClass() {
+        tmpDir = SysUtils.getTmpDir();
+        
         personList.add(new Person("Wiley", "Coyote", 80, 1.10, false));
         personList.add(new Person("Road", "Runner", 81, 100.23, false));
         personList.add(new Person("Bugs", "Bunny", 100, 5436.34, true));
-
-        //JsonUtils.setVerbose(true);  // Show write and read files.
     }
 
     /**
@@ -105,48 +105,65 @@ public class TestJsonUtils {
      */
     @AfterClass
     public static void tearDownClass() {
+        personList.clear();
     }
 
     @Test
-    public void testToJson() throws JsonUtilsException {
-        String actual = JsonUtils.objectToJsonCompact(personList);
-        String expect = "[{\"firstName\":\"Wiley\",\"lastName\":\"Coyote\",\"age\":80,\"salary\":1.1,\"isStudent\":false},{\"firstName\":\"Road\",\"lastName\":\"Runner\",\"age\":81,\"salary\":100.23,\"isStudent\":false},{\"firstName\":\"Bugs\",\"lastName\":\"Bunny\",\"age\":100,\"salary\":5436.34,\"isStudent\":true}]";
-        assertEquals(expect, actual);
+    public void testObjectToJsonCompact() throws JsonUtilsException {
+        // ARRANGE - I have the expect in a relative path for testing.
+        String expectPersonJsonCompact = JsonUtils.readJsonFromFile("./src/test/resources/compact.json");
+        // ACT
+        String actualPersonJsonCompact = JsonUtils.objectToJsonCompact(personList);
+        // ASSERT
+        assertEquals(expectPersonJsonCompact, actualPersonJsonCompact);
+    }
+    
+    @Test
+    public void testObjectToJsonPretty() throws JsonUtilsException {
+        // ARRANGE - I have the expect in a relative path for testing.
+        String expectPersonJsonPretty = JsonUtils.readJsonFromFile("./src/test/resources/pretty.json");
+        // ACT
+        String actualPersonJsonPretty = JsonUtils.objectToJsonPretty(personList);
+        // ASSERT
+        assertEquals(expectPersonJsonPretty, actualPersonJsonPretty);
+    }
 
-        String tmpDir = SysUtils.getTmpDir();
-        String pretty = JsonUtils.toPrettyFormat(actual);
-        JsonUtils.writeJsonToFile(actual, tmpDir + "/compact.json");
-        JsonUtils.writeJsonToFile(pretty, tmpDir + "/pretty.json");
-
-        String readCompact = JsonUtils.readJsonFromFile(tmpDir + "/compact.json");
+    @Test
+    public void testReadWriteJsonToFile_Compact() throws JsonUtilsException {
+        // ARRANGE 
+        String personJsonCompact = JsonUtils.objectToJsonCompact(personList);
         String readCompactExpect = JsonUtils.readJsonFromFile("./src/test/resources/compact.json");
-        assertEquals(readCompactExpect, readCompact);
-
-        String readPretty = JsonUtils.readJsonFromFile(tmpDir + "/pretty.json");
+        // ACT
+        JsonUtils.writeJsonToFile(personJsonCompact, tmpDir + "/compact.json");
+        String readCompactActual = JsonUtils.readJsonFromFile(tmpDir + "/compact.json");
+        // ASSERT
+        assertEquals(readCompactExpect, readCompactActual);
+    }
+    
+    @Test
+    public void testReadWriteJsonToFile_Pretty() throws JsonUtilsException {
+        // ARRANGE 
+        String personJsonPretty = JsonUtils.objectToJsonPretty(personList);
         String readPrettyExpect = JsonUtils.readJsonFromFile("./src/test/resources/pretty.json");
-        assertEquals(readPrettyExpect, readPretty);
-
-        String compact = JsonUtils.toCompactFormat(pretty);
-        assertEquals(expect, compact);
+        // ACT
+        JsonUtils.writeJsonToFile(personJsonPretty, tmpDir + "/pretty.json");
+        String readPrettyActual = JsonUtils.readJsonFromFile(tmpDir + "/pretty.json");
+        // ASSERT
+        assertEquals(readPrettyExpect, readPrettyActual);
     }
 
     @Test
     public void testFromJson() throws JsonUtilsException {
         // ARRANGE
         String json = "[{\"firstName\":\"Elmer\",\"lastName\":\"Fudd\",\"age\":90,\"salary\":16.16,\"isStudent\":false},{\"firstName\":\"Daffy\",\"lastName\":\"Duck\",\"age\":91,\"salary\":0.25,\"isStudent\":true},{\"firstName\":\"Foghorn\",\"lastName\":\"Leghorn\",\"age\":20,\"salary\":6.00,\"isStudent\":false}]";
-
         List<Person> expectList = new ArrayList<>();
-        
         expectList.add(new Person("Elmer", "Fudd", 90, 16.16, false));
         expectList.add(new Person("Daffy", "Duck", 91, 0.25, true));
         expectList.add(new Person("Foghorn", "Leghorn", 20, 6.0, false));
-
         // ACT
         List<Person> actualList = Person.fromJson(json);
-
         // ASSERT - Person.java has override on equals() and hashCode()
         // http://javarevisited.blogspot.com/2011/02/how-to-write-equals-method-in-java.html
         assertTrue(expectList.equals(actualList));
     }
-
 }
