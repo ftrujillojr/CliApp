@@ -2,14 +2,19 @@ package org.nve.cliapp_test;
 
 // junit.framework.Test package is the legacy namespace used with Junit v3 and older versions of Java that do not support annotations.
 // org.junit.Test is the new namespace used by JUnit v4 and requires Java v1.5 or later for its annotations.
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Map;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.nve.cliapp.SysUtils;
+import org.nve.cliapp.SysUtilsException;
 //import org.junit.Ignore;
 
 /*   ARRANGE    ACT    ASSERT
@@ -104,11 +109,29 @@ public class TestSysUtils {
      * Give your test methods meaningful names.
      * @throws java.io.IOException
      */
-    @Test
+    @Test @Ignore
     public void testListDir() throws IOException {
         Map<String, BasicFileAttributes> fileMap = SysUtils.ffind(Paths.get(SysUtils.getEnv("HOME")), ".*\\.js$");
         System.out.println("========================================");
         SysUtils.displayFileMap(fileMap);
+    }
+    
+    @Test
+    public void testMkdir_p() throws SysUtilsException {
+        // ARRANGE
+        SysUtils.rmDirTree("/tmp/test");
+        
+        // ACT
+        boolean dirCreated = SysUtils.mkdir_p("/tmp/test/sysutils");
+        
+        // ASSERT
+        assertTrue(dirCreated);
+        
+        // Cleanup
+        SysUtils.rmDirTree("/tmp/test");
+        File fileObj = new File("/tmp/test");
+        boolean dirShouldNotExist = fileObj.exists();
+        assertFalse(dirShouldNotExist);
     }
     
     

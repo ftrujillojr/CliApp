@@ -13,10 +13,12 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import static java.lang.Integer.MAX_VALUE;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
@@ -31,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Just a few methods to help with System level stuff by utilizing standard Java
@@ -67,8 +71,13 @@ public final class SysUtils {
     private static int lastSystemStatus = 0;
     private static PrintStream savedStdout = System.out;
     private static PrintStream savedStderr = System.err;
+    private static boolean verbose = false;
 
     public SysUtils() {
+    }
+
+    public static void setVerbose(boolean val) {
+        SysUtils.verbose = val;
     }
 
     public static String getTmpDir() {
@@ -147,11 +156,62 @@ public final class SysUtils {
      * Remove file if it exists.
      *
      * @param filename A string
+     * @throws org.nve.cliapp.SysUtilsException
      */
-    public static void rmFile(String filename) {
-        File fileObj = new File(filename);
+    public static void rmFile(String filename) throws SysUtilsException {
+        try {
+            Files.deleteIfExists(Paths.get(filename));
+        } catch (IOException ex) {
+            String msg = "ERROR: IOException (permissions) => " + filename + "\n";
+            msg += ex.getMessage();
+            throw new SysUtilsException(msg);
+        }
+    }
 
-        if (fileObj.exists() && fileObj.isFile()) {
+    public static void rmDir(String dirname) throws SysUtilsException {
+        try {
+            Files.deleteIfExists(Paths.get(dirname));
+        } catch (NoSuchFileException ex) {
+            String msg = "ERROR: NoSuchFileException => " + dirname + "\n";
+            msg += ex.getMessage();
+            throw new SysUtilsException(msg);
+        } catch (DirectoryNotEmptyException ex) {
+            String msg = "ERROR: DirectoryNotEmptyException => " + dirname + "\n";
+            msg += ex.getMessage();
+            throw new SysUtilsException(msg);
+        } catch (IOException ex) {
+            String msg = "ERROR: IOException (permissions) => " + dirname + "\n";
+            msg += ex.getMessage();
+            throw new SysUtilsException(msg);
+        }
+    }
+
+    public static void rmDirTree(String dirname) {
+        File fileObj = new File(dirname);
+
+        if (fileObj.exists()) {
+            for (File sub : fileObj.listFiles()) {
+                if (Files.isSymbolicLink(Paths.get(sub.getAbsolutePath()))) {
+                    if (SysUtils.verbose) {
+                        System.out.println("DELETE SymLink => " + sub.getAbsolutePath());
+                    }
+                    sub.delete();
+                } else if (sub.isFile()) {
+                    if (SysUtils.verbose) {
+                        System.out.println("DELETE File => " + sub.getAbsolutePath());
+                    }
+                    sub.delete();
+                } else if (sub.isDirectory()) {
+                    SysUtils.rmDirTree(sub.getAbsolutePath());
+                    if (SysUtils.verbose) {
+                        System.out.println("DELETE Directory => " + sub.getAbsolutePath());
+                    }
+                    sub.delete();
+                }
+            }
+            if (SysUtils.verbose) {
+                System.out.println("DELETE TOP Directory => " + dirname);
+            }
             fileObj.delete();
         }
     }
@@ -164,11 +224,13 @@ public final class SysUtils {
      * @return boolean //
      */
     public static boolean mkdir_p(String dirname) {
-        boolean status = false;
+        boolean status;
 
         File fileObj = new File(dirname);
         if (fileObj.exists() == false) {
             status = fileObj.mkdirs();
+        } else {
+            status = true;
         }
 
         return (status);
@@ -307,7 +369,6 @@ public final class SysUtils {
         return (path);
     }
 
-    
     /**
      * http://www.javaworld.com/article/2928805/core-java/nio-2-cookbook-part-3.html
      *
