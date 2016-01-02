@@ -168,6 +168,12 @@ public final class SysUtils {
         }
     }
 
+    /**
+     * Remove dir if it exists.
+     * 
+     * @param dirname
+     * @throws org.nve.cliapp.SysUtilsException 
+     */
     public static void rmDir(String dirname) throws SysUtilsException {
         try {
             Files.deleteIfExists(Paths.get(dirname));
@@ -186,7 +192,13 @@ public final class SysUtils {
         }
     }
 
-    public static void rmDirTree(String dirname) {
+    /**
+     * Removes the ENTIRE tree denoted by dirname input.
+     * 
+     * @param dirname 
+     * @throws org.nve.cliapp.SysUtilsException 
+     */
+    public static void rmDirTree(String dirname) throws SysUtilsException {
         File fileObj = new File(dirname);
 
         if (fileObj.exists()) {
@@ -195,18 +207,18 @@ public final class SysUtils {
                     if (SysUtils.verbose) {
                         System.out.println("DELETE SymLink => " + sub.getAbsolutePath());
                     }
-                    sub.delete();
+                    SysUtils.rmFile(sub.getAbsolutePath());
                 } else if (sub.isFile()) {
                     if (SysUtils.verbose) {
                         System.out.println("DELETE File => " + sub.getAbsolutePath());
                     }
-                    sub.delete();
+                    SysUtils.rmFile(sub.getAbsolutePath());
                 } else if (sub.isDirectory()) {
                     SysUtils.rmDirTree(sub.getAbsolutePath());
                     if (SysUtils.verbose) {
                         System.out.println("DELETE Directory => " + sub.getAbsolutePath());
                     }
-                    sub.delete();
+                    SysUtils.rmDir(sub.getAbsolutePath());
                 }
             }
             if (SysUtils.verbose) {
