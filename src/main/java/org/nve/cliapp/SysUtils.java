@@ -23,9 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -67,8 +65,8 @@ public final class SysUtils {
     private static Map<String, BasicFileAttributes> fileMap = new LinkedHashMap<>();
     private static Map<String, BasicFileAttributes> dirMap = new LinkedHashMap<>();
     private static int lastSystemStatus = 0;
-    private static PrintStream savedStdout = System.out;
-    private static PrintStream savedStderr = System.err;
+    private static PrintStream savedStdout = System.out; // This is what stdout is originally
+    private static PrintStream savedStderr = System.err; // This is what stderr is originally
     private static boolean verbose = false;
 
     public SysUtils() {
@@ -82,7 +80,7 @@ public final class SysUtils {
         if (SysUtils.isLinux()) {
             return ("/tmp");
         } else {
-            return ("/tmp");
+            return ("c:\\tmp");
         }
     }
 
@@ -168,9 +166,9 @@ public final class SysUtils {
 
     /**
      * Remove dir if it exists.
-     * 
+     *
      * @param dirname
-     * @throws org.nve.cliapp.SysUtilsException 
+     * @throws org.nve.cliapp.SysUtilsException
      */
     public static void rmDir(String dirname) throws SysUtilsException {
         try {
@@ -192,9 +190,9 @@ public final class SysUtils {
 
     /**
      * Removes the ENTIRE tree denoted by dirname input.
-     * 
-     * @param dirname 
-     * @throws org.nve.cliapp.SysUtilsException 
+     *
+     * @param dirname
+     * @throws org.nve.cliapp.SysUtilsException
      */
     public static void rmDirTree(String dirname) throws SysUtilsException {
         File fileObj = new File(dirname);
@@ -304,51 +302,6 @@ public final class SysUtils {
         System.setOut(savedStdout);
     }
 
-    public static String formatDoubleToString(Double value) {
-        DecimalFormat df = new DecimalFormat("#.0000");
-        String result = df.format(value);
-        return result;
-    }
-
-    public static String getEpochAsString() {
-        return formatDoubleToString(SysUtils.getEpochAsDouble());
-    }
-
-    public static Double getEpochAsDouble() {
-        Date mydate = new Date();
-        long epoch = mydate.getTime(); // returns milliseconds, need to / 1000
-        Double result = (epoch / 1000.0);
-        return result;
-    }
-
-    public static String epochToAsciiDate(String strEpoch) {
-        Double dbEpoch = Double.parseDouble(strEpoch);
-        Date myDate = new Date((dbEpoch.longValue() * 1000));
-        return myDate.toString();
-    }
-
-    public static String epochToAsciiDate(double epoch) {
-        @SuppressWarnings("UnnecessaryBoxing")
-        Double dbEpoch = new Double(epoch);
-        Date myDate = new Date((dbEpoch.longValue() * 1000));
-        return myDate.toString();
-    }
-
-    public static Double atof(String mydouble) {
-        Double result = Double.parseDouble(mydouble);
-        return result;
-    }
-
-    public static Integer atoi(String value) {
-        Integer result = Integer.parseInt(value);
-        return (result);
-    }
-
-    public String itoa(int value) {
-        String result = Integer.toString(value);
-        return (result);
-    }
-
     public static Path getCwd() {
         String workingDir = System.getProperty("user.dir");
         Path path = Paths.get(workingDir);
@@ -391,18 +344,25 @@ public final class SysUtils {
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
                 // Do not walk down repository or NetApp snapshots.
                 // [/\\\\]  matches BOTH Unix and Windows separators.
-                if (RegExp.isMatch(".*[/\\\\].git$|.*[/\\\\].svn$|.*[/\\\\]CVS$|.*[/\\\\].snapshot$|.*[/\\\\].ssh$|.*[/\\\\].m2$|.*[/\\\\]CPAN$|.*[/\\\\].hg|.*[/\\\\]SCCS$$", dir.toString())) {
+                if (RegExp.isMatch(".*[/\\\\].git$|.*[/\\\\].svn$|.*[/\\\\]CVS$|.*[/\\\\].snapshot$|.*[/\\\\].ssh$|.*[/\\\\].m2$|.*[/\\\\]CPAN$|.*[/\\\\].hg|.*[/\\\\]SCCS$|.*[/\\\\]AppData$", dir.toString())) {
+                    if (SysUtils.verbose) {
+                        System.out.println("SKIP: dir " + dir.toString());
+                    }
                     return FileVisitResult.SKIP_SUBTREE;
                 }
-//                System.out.format("%s [Directory]%n", dir);
+                if (SysUtils.verbose) {
+                    System.out.format("DIR: %s %n", dir);
+                }
                 SysUtils.dirMap.put(dir.toString(), attrs);
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-//                  System.out.format("%s [File,  Size: %s  bytes]%n", file, attrs.size());
-                String basename = getBaseName(file.toString());
+                if (SysUtils.verbose) {
+                    System.out.format("FILE: %s%n", file);
+                }
+                String basename = SysUtils.getBaseName(file.toString());
                 if (RegExp.isMatch(fileNameRegExp, basename)) {
                     SysUtils.fileMap.put(file.toString(), attrs);
                 }
@@ -413,7 +373,9 @@ public final class SysUtils {
             @Override
             public FileVisitResult visitFileFailed(Path file, IOException e)
                     throws IOException {
-                System.err.printf("WARNING: Directory or file access is restricted for => %s\n", file);
+                if (SysUtils.verbose) {
+                    System.err.printf("WARNING: Directory or file access is restricted for => %s\n", file);
+                }
                 return FileVisitResult.SKIP_SUBTREE;
             }
         }
@@ -427,7 +389,7 @@ public final class SysUtils {
         Set<FileVisitOption> fileVisitOptions = new TreeSet<>();
         fileVisitOptions.add(FileVisitOption.FOLLOW_LINKS); // this is the only option right now. Might be more someday.
         int maxDepth = MAX_VALUE;  // MAX_VALUE is all directories,  0 is top only.
-        FileVisitor<Path> visitor = getFileVisitor();
+        FileVisitor<Path> visitor = SysUtils.getFileVisitor();
 
         if (fileRegEx != null && !fileRegEx.isEmpty()) {
             SysUtils.fileNameRegExp = fileRegEx;
@@ -438,8 +400,11 @@ public final class SysUtils {
                 fileVisitOptions,
                 maxDepth,
                 visitor);
-
-        return (SysUtils.fileMap);
+        
+        // I want to return a NEW instance on each call, just in case I make several calls to the ffind() method.
+        // see test_ffind() for example
+        Map<String, BasicFileAttributes> resultFileMap = new LinkedHashMap<>(SysUtils.fileMap);
+        return (resultFileMap);
     }
 
     /**

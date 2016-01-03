@@ -2,17 +2,25 @@ package org.nve.cliapp_test;
 
 // junit.framework.Test package is the legacy namespace used with Junit v3 and older versions of Java that do not support annotations.
 // org.junit.Test is the new namespace used by JUnit v4 and requires Java v1.5 or later for its annotations.
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.nve.cliapp.RegExp;
 import org.nve.cliapp.SysUtils;
 import org.nve.cliapp.SysUtilsException;
 //import org.junit.Ignore;
@@ -104,20 +112,63 @@ public class TestSysUtils {
     @AfterClass
     public static void tearDownClass() {
     }
+    
+    // THIS IS NOT A TEST.
+    private static void createEmptyFileForTesting(String filename) throws IOException {
+        String dirname = SysUtils.getDirName(filename);
+        SysUtils.mkdir_p(dirname);
+        Files.deleteIfExists(Paths.get(filename));
+        try(BufferedWriter bw = SysUtils.getBufferedWriterInstance(filename, "UTF-8", false)) {
+            bw.write("Just a file for testing.");
+            bw.flush();
+        }
+    }
 
     /**
-     * Give your test methods meaningful names.
-     * @throws java.io.IOException
+     * This test will create 7 files with different extensions.
+     * The first assertion should return a sub set of the files. (4)
+     * The second assertion should return all 7.
+     * @throws IOException
+     * @throws SysUtilsException 
      */
-    @Test @Ignore
-    public void testListDir() throws IOException {
-        Map<String, BasicFileAttributes> fileMap = SysUtils.ffind(Paths.get(SysUtils.getEnv("HOME")), ".*\\.js$");
-        System.out.println("========================================");
-        SysUtils.displayFileMap(fileMap);
+    @Test
+    public void test_ffind() throws IOException, SysUtilsException {
+        // ARRANGE
+        Path tmpPath = Paths.get(SysUtils.getTmpDir(), "testListDir");
+        List<String> fileList = new ArrayList<>();
+        fileList.add(Paths.get(tmpPath.toString(), "top.txt").toString());
+        fileList.add(Paths.get(tmpPath.toString(), "SHOULD_NOT_SEE.doc").toString());
+        fileList.add(Paths.get(tmpPath.toString(), "sub1", "sub1.txt").toString());
+        fileList.add(Paths.get(tmpPath.toString(), "sub1", "SHOULD_NOT_SEE.ppt").toString());
+        fileList.add(Paths.get(tmpPath.toString(), "sub1", "sub2", "sub2.pdf").toString());
+        fileList.add(Paths.get(tmpPath.toString(), "sub1", "sub2", "mickey_mouse.png").toString());
+        fileList.add(Paths.get(tmpPath.toString(), "sub1", "sub2", "SHOULD_NOT_SEE.xls").toString());
+
+        int expectedCount = 0;
+        Iterator<String> itr = fileList.iterator();
+        while(itr.hasNext()) {
+            String fileName = itr.next();
+            TestSysUtils.createEmptyFileForTesting(fileName);
+            if(! RegExp.isMatch(".*SHOULD_NOT_SEE.*", fileName)) {
+                expectedCount++;
+            }
+        }
+
+        // ACT
+        Map<String, BasicFileAttributes> fileMap = SysUtils.ffind(tmpPath, ".*\\.png$|.*\\.pdf$|.*\\.txt$");
+        Map<String, BasicFileAttributes> fileMapAll = SysUtils.ffind(tmpPath, ".*");
+        
+        // ASSERT
+        assertEquals(expectedCount, fileMap.keySet().size());
+        assertEquals(fileList.size(), fileMapAll.keySet().size());
+        
+        // Cleanup
+        // Remove the tmp file tree.
+        SysUtils.rmDirTree(tmpPath.toString());
     }
     
     @Test
-    public void testMkdir_p() throws SysUtilsException {
+    public void test_mkdir_p() throws SysUtilsException {
         // ARRANGE
         SysUtils.rmDirTree("/tmp/test");
         
