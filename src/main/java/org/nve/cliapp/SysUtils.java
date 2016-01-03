@@ -363,7 +363,7 @@ public final class SysUtils {
                     System.out.format("FILE: %s%n", file);
                 }
                 String basename = SysUtils.getBaseName(file.toString());
-                if (RegExp.isMatch(fileNameRegExp, basename)) {
+                if (attrs.isRegularFile() && RegExp.isMatch(fileNameRegExp, basename)) {
                     SysUtils.fileMap.put(file.toString(), attrs);
                 }
                 return FileVisitResult.CONTINUE;
@@ -383,12 +383,35 @@ public final class SysUtils {
         return visitor;
     }
 
+    /**
+     * Recursively find all files in startPath that match regexp fileRegEx.
+     * 
+     * @param startPath
+     * @param fileRegEx
+     * @return
+     * @throws IOException 
+     */
     public static Map<String, BasicFileAttributes> ffind(Path startPath, String fileRegEx) throws IOException {
+        return(SysUtils.ffind(startPath, fileRegEx, MAX_VALUE));
+    }
+
+    /**
+     * Recursively find all files in startPath that match regexp fileRegEx with max depth.
+     * 
+     * @param startPath
+     * @param fileRegEx
+     * @param maxDepth
+     * @return
+     * @throws IOException 
+     */
+    public static Map<String, BasicFileAttributes> ffind(Path startPath, String fileRegEx, int maxDepth) throws IOException {
+        // These two maps are just temporary collections while I walk the tree.
         SysUtils.dirMap.clear();
         SysUtils.fileMap.clear();
+
         Set<FileVisitOption> fileVisitOptions = new TreeSet<>();
         fileVisitOptions.add(FileVisitOption.FOLLOW_LINKS); // this is the only option right now. Might be more someday.
-        int maxDepth = MAX_VALUE;  // MAX_VALUE is all directories,  0 is top only.
+
         FileVisitor<Path> visitor = SysUtils.getFileVisitor();
 
         if (fileRegEx != null && !fileRegEx.isEmpty()) {
@@ -400,7 +423,7 @@ public final class SysUtils {
                 fileVisitOptions,
                 maxDepth,
                 visitor);
-        
+
         // I want to return a NEW instance on each call, just in case I make several calls to the ffind() method.
         // see test_ffind() for example
         Map<String, BasicFileAttributes> resultFileMap = new LinkedHashMap<>(SysUtils.fileMap);

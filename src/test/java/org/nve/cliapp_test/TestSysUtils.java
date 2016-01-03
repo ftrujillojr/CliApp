@@ -157,10 +157,23 @@ public class TestSysUtils {
         // ACT
         Map<String, BasicFileAttributes> fileMap = SysUtils.ffind(tmpPath, ".*\\.png$|.*\\.pdf$|.*\\.txt$");
         Map<String, BasicFileAttributes> fileMapAll = SysUtils.ffind(tmpPath, ".*");
+        Map<String, BasicFileAttributes> fileMapTop = SysUtils.ffind(tmpPath, ".*", 1);
         
         // ASSERT
+        if(fileMap.keySet().size() != expectedCount) {
+            SysUtils.displayFileMap(fileMap);
+        }
         assertEquals(expectedCount, fileMap.keySet().size());
+        
+        if(fileMapAll.keySet().size() != fileList.size()) {
+            SysUtils.displayFileMap(fileMapAll);
+        }
         assertEquals(fileList.size(), fileMapAll.keySet().size());
+        
+        if(fileMapTop.keySet().size() != 2) {
+            SysUtils.displayFileMap(fileMapTop);
+        }
+        assertEquals(2, fileMapTop.keySet().size());
         
         // Cleanup
         // Remove the tmp file tree.
