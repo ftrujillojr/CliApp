@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -196,6 +197,42 @@ public class TestSysUtils {
         File fileObj = new File("/tmp/test");
         boolean dirShouldNotExist = fileObj.exists();
         assertFalse(dirShouldNotExist);
+    }
+    
+    @Test
+    public void testSystem() throws IOException, SysUtilsException {
+        // ARRANGE
+        Path tmpPath = Paths.get(SysUtils.getTmpDir(), "testSystemDir");
+        Set<String> expectFileSet = new TreeSet<>();
+        expectFileSet.add("file1.txt");
+        expectFileSet.add("file2.txt");
+        
+        Iterator<String> itr = expectFileSet.iterator();
+        while(itr.hasNext()) {
+            String fileName = itr.next();
+            TestSysUtils.createEmptyFileForTesting(Paths.get(tmpPath.toString(), fileName).toString());
+        }
+        
+        // ACT
+        List<String> results;
+        if(SysUtils.isLinux()) {
+            results = SysUtils.system("/bin/ls -al " + tmpPath.toString());
+        } else {
+            results = SysUtils.system("dir " + tmpPath.toString());
+        }
+
+        Set<String> actualFileSet = new TreeSet<>();
+        Iterator<String> itr2 = results.iterator();
+        while(itr2.hasNext()) {
+            String line = itr2.next();
+            if(RegExp.isMatch(".*(file[0-9]+\\.txt).*", line)) {
+                List<String> subExps = RegExp.getSubExps();
+                actualFileSet.add(subExps.get(1));
+            }
+        }
+        
+        // ASSERT
+        assertEquals(expectFileSet, actualFileSet);
     }
     
     
