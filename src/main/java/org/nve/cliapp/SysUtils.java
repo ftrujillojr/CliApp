@@ -246,6 +246,7 @@ public final class SysUtils {
 
     public static List<String> system(String command) throws SysUtilsException {
         String[] linuxCmd = {"/bin/csh", "-c", command};
+        String[] windowsCmd = {"cmd", "/c", command};
 
         ArrayList<String> results = new ArrayList<>();
         String line;
@@ -254,8 +255,13 @@ public final class SysUtils {
 
             if (SysUtils.isLinux()) {
                 proc = Runtime.getRuntime().exec(linuxCmd);
-            } else {
-                proc = Runtime.getRuntime().exec(command, null, null);
+            } 
+            else if (SysUtils.isWindows()) {
+                proc = Runtime.getRuntime().exec(windowsCmd, null, null);
+            }
+            else {
+                String msg = "ERROR: SysUtils.system() is not setup to run on your platform.";
+                throw new SysUtilsException(msg);
             }
 
             try (BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
@@ -444,6 +450,20 @@ public final class SysUtils {
         }
     }
 
+    /**
+     * Display a Set&lt;T&gt; to stdout.
+     * 
+     * @param <T>
+     * @param set 
+     */
+    public static <T> void displaySet(Set<T> set) {
+        Iterator<T> itr = set.iterator();
+        while (itr.hasNext()) {
+            T t = itr.next();
+            System.out.println(t.toString());
+        }
+    }
+
     public static void displayFileMap(Map<String, BasicFileAttributes> map) {
         Iterator<String> itr = map.keySet().iterator();
         while (itr.hasNext()) {
@@ -461,7 +481,7 @@ public final class SysUtils {
         Boolean isLinux = false;
         String osName = System.getProperty("os.name");
 
-        if (RegExp.isMatch(osName.toUpperCase(), "LINUX")) {
+        if (RegExp.isMatch(".*LINUX.*", osName.toUpperCase())) {
             isLinux = true;
         }
         return isLinux;
@@ -475,8 +495,7 @@ public final class SysUtils {
     public static Boolean isWindows() {
         Boolean isWindows = false;
         String osName = System.getProperty("os.name");
-
-        if (RegExp.isMatch(osName.toUpperCase(), "WINDOWS")) {
+        if (RegExp.isMatch(".*WINDOWS.*", osName.toUpperCase())) {
             isWindows = true;
         }
         return isWindows;
