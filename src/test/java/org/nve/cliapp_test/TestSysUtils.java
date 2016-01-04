@@ -201,7 +201,7 @@ public class TestSysUtils {
     
     @Test
     public void testSystem() throws IOException, SysUtilsException {
-        // ARRANGE
+        // ARRANGE - /tmp/testSystemDir/file*.txt
         Path tmpPath = Paths.get(SysUtils.getTmpDir(), "testSystemDir");
         Set<String> expectFileSet = new TreeSet<>();
         expectFileSet.add("file1.txt");
@@ -213,7 +213,7 @@ public class TestSysUtils {
             TestSysUtils.createEmptyFileForTesting(Paths.get(tmpPath.toString(), fileName).toString());
         }
         
-        // ACT
+        // ACT - showing two different commands that do similar function on different OS.
         List<String> results;
         if(SysUtils.isLinux()) {
             results = SysUtils.system("/bin/ls -al " + tmpPath.toString());
