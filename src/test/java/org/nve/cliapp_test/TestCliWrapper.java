@@ -7,7 +7,6 @@ import java.util.TreeMap;
 import org.apache.commons.cli.Option;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nve.cliapp.CliWrapper;

@@ -77,10 +77,11 @@ public final class SysUtils {
     }
 
     public static String getTmpDir() {
-        if (SysUtils.isLinux()) {
-            return ("/tmp");
-        } else {
+        if (SysUtils.isWindows()) {
+            SysUtils.mkdir_p("c:\\tmp");
             return ("c:\\tmp");
+        } else {
+            return ("/tmp");
         }
     }
 
