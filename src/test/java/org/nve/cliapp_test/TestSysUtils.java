@@ -5,6 +5,7 @@ package org.nve.cliapp_test;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,28 +29,27 @@ import org.nve.cliapp.SysUtilsException;
 
 /*   ARRANGE    ACT    ASSERT
 
-   To run tests:
-   ============================
-   mvn test
-   mvn -Dtest=TestCircle test
-   (in Netbeans, Alt+F6)
+ To run tests:
+ ============================
+ mvn test
+ mvn -Dtest=TestCircle test
+ (in Netbeans, Alt+F6)
 
-  Your pom.xml should have this plugin.
+ Your pom.xml should have this plugin.
 
-  <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12.4</version>
-        <configuration>
-            <skipTests>false</skipTests>
-        </configuration>
-    </plugin>
-*/
-
+ <plugin>
+ <groupId>org.apache.maven.plugins</groupId>
+ <artifactId>maven-surefire-plugin</artifactId>
+ <version>2.12.4</version>
+ <configuration>
+ <skipTests>false</skipTests>
+ </configuration>
+ </plugin>
+ */
 /**
  * <pre>
  * http://junit.org/javadoc/latest/index.html     (JUnit must be &gt;= 4.11)
- * 
+ *
  * assertArrayEquals(String msg,    **[] expect,   **[] actual)
  *      assertEquals(String msg,    ** expect,     ** actual)
  *   assertNotEquals(String msg,    ** unexpected, ** actual)
@@ -62,12 +62,12 @@ import org.nve.cliapp.SysUtilsException;
  *        assertThat(String reason, T actual, Match&lt;T&gt; matcher)
  *              fail()
  *              fail(String msg)
- * 
- * 
+ *
+ *
  * Matchers are used in assertThat() calls.
- * 
+ *
  * http://junit.org/javadoc/latest/org/hamcrest/core/package-frame.html
- * 
+ *
  *   assertThat("myValue",                          allOf(startsWith("my"), containsString("Val")))
  *   assertThat("myValue",                          anyOf(startsWith("foo"), containsString("Val")))
  *   assertThat("fab",                              both(containsString("a")).and(containsString("b")))
@@ -83,25 +83,25 @@ import org.nve.cliapp.SysUtilsException;
  *   assertThat("myStringOfNote",                   containsString("ring"))
  *   assertThat("myStringOfNote",                   endsWith("Note"))
  *   assertThat("myStringOfNote",                   startsWith("my"))
- * 
+ *
  * </pre>
  */
 public class TestSysUtils {
-    
+
     /**
-     * Do not use the constructor to set up a test case. 
-     * Use setupClass() method below. 
-     * 
+     * Do not use the constructor to set up a test case. Use setupClass() method
+     * below.
+     *
      * The reason is the stack crashes if first test fails to instantiate.
-     */    
+     */
     public TestSysUtils() {
         // Best practice => Do not put anything here.
     }
 
     /**
      * Sometimes several tests need to share computationally expensive setup
-     * like logging into a database.
-     * If you need to do an initialization once before testing all methods.
+     * like logging into a database. If you need to do an initialization once
+     * before testing all methods.
      */
     @BeforeClass
     public static void setUpClass() {
@@ -113,24 +113,25 @@ public class TestSysUtils {
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     // THIS IS NOT A TEST.
     private static void createEmptyFileForTesting(String filename) throws IOException {
         String dirname = SysUtils.getDirName(filename);
         SysUtils.mkdir_p(dirname);
         Files.deleteIfExists(Paths.get(filename));
-        try(BufferedWriter bw = SysUtils.getBufferedWriterInstance(filename, "UTF-8", false)) {
+        try (BufferedWriter bw = SysUtils.getBufferedWriterInstance(filename, "UTF-8", false)) {
             bw.write("Just a file for testing.");
             bw.flush();
         }
     }
 
     /**
-     * This test will create 7 files with different extensions.
-     * The first assertion should return a sub set of the files. (4)
-     * The second assertion should return all 7.
+     * This test will create 7 files with different extensions. The first
+     * assertion should return a sub set of the files. (4) The second assertion
+     * should return all 7.
+     *
      * @throws IOException
-     * @throws SysUtilsException 
+     * @throws SysUtilsException
      */
     @Test
     public void test_ffind() throws IOException, SysUtilsException {
@@ -147,10 +148,10 @@ public class TestSysUtils {
 
         int expectedCount = 0;
         Iterator<String> itr = fileList.iterator();
-        while(itr.hasNext()) {
+        while (itr.hasNext()) {
             String fileName = itr.next();
             TestSysUtils.createEmptyFileForTesting(fileName);
-            if(! RegExp.isMatch(".*SHOULD_NOT_SEE.*", fileName)) {
+            if (!RegExp.isMatch(".*SHOULD_NOT_SEE.*", fileName)) {
                 expectedCount++;
             }
         }
@@ -159,46 +160,46 @@ public class TestSysUtils {
         Map<String, BasicFileAttributes> fileMap = SysUtils.ffind(tmpPath, ".*\\.png$|.*\\.pdf$|.*\\.txt$");
         Map<String, BasicFileAttributes> fileMapAll = SysUtils.ffind(tmpPath, ".*");
         Map<String, BasicFileAttributes> fileMapTop = SysUtils.ffind(tmpPath, ".*", 1);
-        
+
         // ASSERT
-        if(fileMap.keySet().size() != expectedCount) {
+        if (fileMap.keySet().size() != expectedCount) {
             SysUtils.displayFileMap(fileMap);
         }
         assertEquals(expectedCount, fileMap.keySet().size());
-        
-        if(fileMapAll.keySet().size() != fileList.size()) {
+
+        if (fileMapAll.keySet().size() != fileList.size()) {
             SysUtils.displayFileMap(fileMapAll);
         }
         assertEquals(fileList.size(), fileMapAll.keySet().size());
-        
-        if(fileMapTop.keySet().size() != 2) {
+
+        if (fileMapTop.keySet().size() != 2) {
             SysUtils.displayFileMap(fileMapTop);
         }
         assertEquals(2, fileMapTop.keySet().size());
-        
+
         // Cleanup
         // Remove the tmp file tree.
         SysUtils.rmDirTree(tmpPath.toString());
     }
-    
+
     @Test
     public void test_mkdir_p() throws SysUtilsException {
         // ARRANGE
         SysUtils.rmDirTree("/tmp/test");
-        
+
         // ACT
         boolean dirCreated = SysUtils.mkdir_p("/tmp/test/sysutils");
-        
+
         // ASSERT
         assertTrue(dirCreated);
-        
+
         // Cleanup
         SysUtils.rmDirTree("/tmp/test");
         File fileObj = new File("/tmp/test");
         boolean dirShouldNotExist = fileObj.exists();
         assertFalse(dirShouldNotExist);
     }
-    
+
     @Test
     public void testSystem() throws IOException, SysUtilsException {
         // ARRANGE - /tmp/testSystemDir/file*.txt
@@ -206,16 +207,16 @@ public class TestSysUtils {
         Set<String> expectFileSet = new TreeSet<>();
         expectFileSet.add("file1.txt");
         expectFileSet.add("file2.txt");
-        
+
         Iterator<String> itr = expectFileSet.iterator();
-        while(itr.hasNext()) {
+        while (itr.hasNext()) {
             String fileName = itr.next();
             TestSysUtils.createEmptyFileForTesting(Paths.get(tmpPath.toString(), fileName).toString());
         }
-        
+
         // ACT - showing two different commands that do similar function on different OS.
         List<String> results;
-        if(SysUtils.isLinux()) {
+        if (SysUtils.isLinux()) {
             results = SysUtils.system("/bin/ls -al " + tmpPath.toString());
         } else {
             results = SysUtils.system("dir " + tmpPath.toString());
@@ -223,21 +224,76 @@ public class TestSysUtils {
 
         Set<String> actualFileSet = new TreeSet<>();
         Iterator<String> itr2 = results.iterator();
-        while(itr2.hasNext()) {
+        while (itr2.hasNext()) {
             String line = itr2.next();
-            if(RegExp.isMatch(".*(file[0-9]+\\.txt).*", line)) {
+            if (RegExp.isMatch(".*(file[0-9]+\\.txt).*", line)) {
                 List<String> subExps = RegExp.getSubExps();
                 actualFileSet.add(subExps.get(1));
             }
         }
-        
+
         // ASSERT
         assertEquals(expectFileSet, actualFileSet);
-        
+
         // Cleanup
         // Remove the tmp file tree.
         SysUtils.rmDirTree(tmpPath.toString());
     }
-    
-    
+
+    @Test
+    public void testRedirect() throws SysUtilsException {
+        // ARRANGE
+        String filename = Paths.get(SysUtils.getTmpDir(), "testRedirect", "stdout.txt").toString();
+        List<String> expectedResults = new ArrayList<>();
+        expectedResults.add("This should go to a file.");
+        expectedResults.add("This line also.");
+
+        // ACT1 - redirect stdout to a file, then read it back
+        SysUtils.redirectStdout(filename, false);
+        System.out.println("This should go to a file.");
+        System.out.println("This line also.");
+        SysUtils.restoreStdout();
+
+        // This should not be in filename.  The restoreStdout() has already been called.
+        //System.out.println("Done with REDIRECT stdout test. Read back filename => " + filename);
+        
+        // ACT2 - read results into List<String>.
+        List<String> actualResults = SysUtils.readTextFile(filename, "UTF-8");
+
+        // ASSERT
+        assertEquals(expectedResults, actualResults);
+
+        // Cleanup
+        // Remove the tmp file tree.
+        SysUtils.rmDirTree(SysUtils.getDirName(filename));
+    }
+
+    @Test
+    public void testWriteReadTextFile() throws SysUtilsException {
+        // ARRANGE
+        String filename = Paths.get(SysUtils.getTmpDir(), "testWriteReadTextFile", "file.txt").toString();
+        List<String> expectData = new ArrayList<>();
+        expectData.add("This is a line to be written to a file.");
+        expectData.add("=======================================");
+        expectData.add(":-)");
+
+        String[] encodings = "ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8".split("[ \\t\\n]+");
+
+        for (int ii = 0; ii < encodings.length; ii++) {
+            // ACT - Write then Read for each encoding
+            SysUtils.writeTextFile(filename, expectData, encodings[ii]);
+            List<String> actualData = SysUtils.readTextFile(filename, encodings[ii]);
+
+            // ASSERT
+            if(! expectData.equals(actualData)) {
+                System.out.println("FAILED test for encoding: testWriteReadTextFile() => " + encodings[ii]);
+            }
+            assertEquals(expectData, actualData);
+        }
+
+        // Cleanup
+        // Remove the tmp file tree.
+        //SysUtils.rmDirTree(SysUtils.getDirName(filename));
+    }
+
 }

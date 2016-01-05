@@ -76,6 +76,12 @@ public final class SysUtils {
         SysUtils.verbose = val;
     }
 
+    /**
+     * This is for my jUnit tests, but I could it elsewhere. (I did not write a
+     * unit test for this method)
+     *
+     * @return
+     */
     public static String getTmpDir() {
         if (SysUtils.isWindows()) {
             SysUtils.mkdir_p("c:\\tmp");
@@ -88,7 +94,8 @@ public final class SysUtils {
     /**
      * Returns the env value for a given key.
      *
-     * If none, then returns empty String.
+     * If none, then returns empty String. (I did not write a unit test for this
+     * method)
      *
      * @param key Env index
      * @return String
@@ -103,6 +110,8 @@ public final class SysUtils {
 
     /**
      * Return a Set of SysUtils.Perms for a given file or dir name string.
+     *
+     * (I did not write a unit test for this method)
      *
      * @param fileOrDirName Just a filename or dirname.
      * @return Set of SysUtils.Perms
@@ -128,6 +137,8 @@ public final class SysUtils {
     /**
      * Input => /home/ftrujillo/filename.txt Output => filename.ext
      *
+     * (I did not write a unit test for this method)
+     *
      * @param fullPath See input
      * @return See output
      */
@@ -140,6 +151,8 @@ public final class SysUtils {
     /**
      * Input => /home/ftrujillo/filename.txt Output => /home/ftrujillo
      *
+     * (I did not write a unit test for this method)
+     *
      * @param fullPath see input
      * @return see output
      */
@@ -151,6 +164,8 @@ public final class SysUtils {
 
     /**
      * Remove file if it exists.
+     *
+     * (I did not write a unit test for this method)
      *
      * @param filename A string
      * @throws org.nve.cliapp.SysUtilsException
@@ -167,6 +182,8 @@ public final class SysUtils {
 
     /**
      * Remove dir if it exists.
+     *
+     * (I did not write a unit test for this method)
      *
      * @param dirname
      * @throws org.nve.cliapp.SysUtilsException
@@ -191,6 +208,8 @@ public final class SysUtils {
 
     /**
      * Removes the ENTIRE tree denoted by dirname input.
+     *
+     * (tested in test_mkdir_p())
      *
      * @param dirname
      * @throws org.nve.cliapp.SysUtilsException
@@ -245,6 +264,16 @@ public final class SysUtils {
         return (status);
     }
 
+    /**
+     * This method will allow a system level call to a shell and return results
+     * in a List&lt;String&gt;
+     *
+     * Currently, method only works for Linux (CSH) and Windows (CMD) shells.
+     *
+     * @param command
+     * @return List&lt;String&gt; There are no new lines in output.
+     * @throws SysUtilsException
+     */
     public static List<String> system(String command) throws SysUtilsException {
         String[] linuxCmd = {"/bin/csh", "-c", command};
         String[] windowsCmd = {"cmd", "/c", command};
@@ -256,11 +285,9 @@ public final class SysUtils {
 
             if (SysUtils.isLinux()) {
                 proc = Runtime.getRuntime().exec(linuxCmd);
-            } 
-            else if (SysUtils.isWindows()) {
+            } else if (SysUtils.isWindows()) {
                 proc = Runtime.getRuntime().exec(windowsCmd, null, null);
-            }
-            else {
+            } else {
                 String msg = "ERROR: SysUtils.system() is not setup to run on your platform.";
                 throw new SysUtilsException(msg);
             }
@@ -292,6 +319,12 @@ public final class SysUtils {
     public static void redirectStdout(String filename, Boolean append) {
         if (filename.isEmpty() == false) {
             try {
+                // We must call this so that if you call redirectStdout more than once prior 
+                // to calling restoreStdout, then files will be flushed and closed.
+                SysUtils.restoreStdout();
+                // Ensure the directory is created for filename.
+                String dirname = SysUtils.getDirName(filename);
+                SysUtils.mkdir_p(dirname);
                 System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream(filename, append)), true));
             } catch (FileNotFoundException ex) {
                 System.err.println("WARNING: Unable to redirectStdout to filename => " + filename);
@@ -340,6 +373,13 @@ public final class SysUtils {
     }
 
     /**
+     * Since this is NOT intuitive, I tested this extensively. This method a
+     * used in ffind() to walk the tree;
+     *
+     * We are skipping over repository [git, svn, cvs, mecurial, sccs]
+     * directories, NetApp snapshots, SSH directory, Maven repo, Perl CPAN,
+     * Windows AppData.
+     *
      * http://www.javaworld.com/article/2928805/core-java/nio-2-cookbook-part-3.html
      *
      * @return FileVisitor&lt&Path&gt;
@@ -360,7 +400,7 @@ public final class SysUtils {
                 if (SysUtils.verbose) {
                     System.out.format("DIR: %s %n", dir);
                 }
-                SysUtils.dirMap.put(dir.toString(), attrs);
+                SysUtils.dirMap.put(dir.toString(), attrs);  // this is cleared prior to walking tree.
                 return FileVisitResult.CONTINUE;
             }
 
@@ -371,19 +411,28 @@ public final class SysUtils {
                 }
                 String basename = SysUtils.getBaseName(file.toString());
                 if (attrs.isRegularFile() && RegExp.isMatch(fileNameRegExp, basename)) {
-                    SysUtils.fileMap.put(file.toString(), attrs);
+                    SysUtils.fileMap.put(file.toString(), attrs); // this is cleared prior to walking tree.
                 }
                 return FileVisitResult.CONTINUE;
             }
 
-            // http://www.technojeeves.com/index.php/9-freebies/82-accessdeniedexception-with-filevisitor-in-java
+            /**
+             * Permission problems on files or directories can be handled here.
+             *
+             * http://www.technojeeves.com/index.php/9-freebies/82-accessdeniedexception-with-filevisitor-in-java
+             *
+             * @param file
+             * @param e
+             * @return
+             * @throws IOException
+             */
             @Override
             public FileVisitResult visitFileFailed(Path file, IOException e)
                     throws IOException {
                 if (SysUtils.verbose) {
                     System.err.printf("WARNING: Directory or file access is restricted for => %s\n", file);
                 }
-                return FileVisitResult.SKIP_SUBTREE;
+                return FileVisitResult.CONTINUE;
             }
         }
         FileVisitor<Path> visitor = new DirVisitor<>();
@@ -392,24 +441,25 @@ public final class SysUtils {
 
     /**
      * Recursively find all files in startPath that match regexp fileRegEx.
-     * 
+     *
      * @param startPath
      * @param fileRegEx
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     public static Map<String, BasicFileAttributes> ffind(Path startPath, String fileRegEx) throws IOException {
-        return(SysUtils.ffind(startPath, fileRegEx, MAX_VALUE));
+        return (SysUtils.ffind(startPath, fileRegEx, MAX_VALUE));
     }
 
     /**
-     * Recursively find all files in startPath that match regexp fileRegEx with max depth.
-     * 
+     * Recursively find all files in startPath that match regexp fileRegEx with
+     * max depth.
+     *
      * @param startPath
      * @param fileRegEx
      * @param maxDepth
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     public static Map<String, BasicFileAttributes> ffind(Path startPath, String fileRegEx, int maxDepth) throws IOException {
         // These two maps are just temporary collections while I walk the tree.
@@ -453,9 +503,9 @@ public final class SysUtils {
 
     /**
      * Display a Set&lt;T&gt; to stdout.
-     * 
+     *
      * @param <T>
-     * @param set 
+     * @param set
      */
     public static <T> void displaySet(Set<T> set) {
         Iterator<T> itr = set.iterator();
@@ -469,7 +519,16 @@ public final class SysUtils {
         Iterator<String> itr = map.keySet().iterator();
         while (itr.hasNext()) {
             String filename = itr.next();
+            BasicFileAttributes attrs = map.get(filename);
             System.out.println(filename);
+
+//            attrs.creationTime();
+//            attrs.lastAccessTime();
+//            attrs.lastModifiedTime();
+//            attrs.isDirectory();
+//            attrs.isRegularFile();
+//            attrs.isSymbolicLink();
+//            attrs.size();
         }
     }
 
@@ -549,25 +608,53 @@ public final class SysUtils {
      * @param filename
      * @param encoding
      * @return List&lt;String&gt;
-     * @throws java.io.FileNotFoundException
-     * @throws java.io.UnsupportedEncodingException
-     * @throws java.io.IOException
-     */
-    public static List<String> readTextFile(String filename, String encoding) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+     * @throws org.nve.cliapp.SysUtilsException
+    */
+    public static List<String> readTextFile(String filename, String encoding) throws SysUtilsException  {
         List<String> records = new ArrayList<>();
         String line;
 
-        try (BufferedReader reader = SysUtils.getBufferedReaderInstance(filename, encoding)) {
-            while ((line = reader.readLine()) != null) {
+        // try with resources will close BufferedReader instance.
+        try (BufferedReader breader = SysUtils.getBufferedReaderInstance(filename, encoding)) {
+            while ((line = breader.readLine()) != null) {
                 records.add(line);
             }
-        } catch (Exception ex) {
-            throw ex;
+        } catch (FileNotFoundException ex) {
+            String msg = "ERROR: readTextFile(" + filename + ", " + encoding + ")";
+            msg += ex.getMessage();
+            throw new SysUtilsException(msg);
+        }catch (IOException ex) {
+            String msg = "ERROR: readTextFile(" + filename + ", " + encoding + ")";
+            msg += ex.getMessage();
+            throw new SysUtilsException(msg);
         }
 
         return records;
     }
 
+    /**
+     * Convenience overloaded method.
+     * 
+     * @param filename
+     * @param listStrings
+     * @param encoding
+     * @throws SysUtilsException 
+     */
+    public static void writeTextFile(String filename, List<String> listStrings, String encoding) throws SysUtilsException  {
+        SysUtils.writeTextFile(filename, listStrings, encoding, false);
+    }
+    
+    /**
+     * Convenience overloaded method.
+     * @param filename
+     * @param listStrings
+     * @param encoding
+     * @throws SysUtilsException 
+     */
+    public static void appendTextFile(String filename, List<String> listStrings, String encoding) throws SysUtilsException  {
+        SysUtils.writeTextFile(filename, listStrings, encoding, true);
+    }
+    
     /**
      * Write List of Strings to an encoded text file.
      *
@@ -577,11 +664,13 @@ public final class SysUtils {
      * @param listStrings
      * @param encoding
      * @param appendToFile
-     * @throws java.io.FileNotFoundException
-     * @throws java.io.UnsupportedEncodingException
-     * @throws java.io.IOException
+     * @throws org.nve.cliapp.SysUtilsException
      */
-    public static void writeTextFile(String filename, List<String> listStrings, String encoding, boolean appendToFile) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+    public static void writeTextFile(String filename, List<String> listStrings, String encoding, boolean appendToFile) throws SysUtilsException  {
+        // Ensure the directory is created for filename.
+        String dirname = SysUtils.getDirName(filename);
+        SysUtils.mkdir_p(dirname);
+        
         // Try with resources will close the Buffered Writer in all events.  Java 1.7+
         try (BufferedWriter writer = new BufferedWriter(getBufferedWriterInstance(filename, encoding, appendToFile))) {
             for (int ii = 0; ii < listStrings.size(); ii++) {
@@ -589,9 +678,15 @@ public final class SysUtils {
                 writer.newLine();
             }
             writer.flush();
-        } catch (Exception ex) {
-            throw ex;
-        }
+        } catch (FileNotFoundException ex) {
+            String msg = "ERROR: writeTextFile(" + filename + ", " + encoding + ")";
+            msg += ex.getMessage();
+            throw new SysUtilsException(msg);
+        } catch (IOException ex) {
+            String msg = "ERROR: writeTextFile(" + filename + ", " + encoding + ")";
+            msg += ex.getMessage();
+            throw new SysUtilsException(msg);
+        }        
     }
 
 }
