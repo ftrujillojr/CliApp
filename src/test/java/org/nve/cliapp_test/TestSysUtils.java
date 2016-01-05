@@ -233,6 +233,10 @@ public class TestSysUtils {
         
         // ASSERT
         assertEquals(expectFileSet, actualFileSet);
+        
+        // Cleanup
+        // Remove the tmp file tree.
+        SysUtils.rmDirTree(tmpPath.toString());
     }
     
     
