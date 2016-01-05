@@ -114,7 +114,7 @@ public class TestSysUtils {
     }
 
     // THIS IS NOT A TEST.
-    private static void createEmptyFileForTesting(String filename) throws IOException {
+    private static void createEmptyFileForTesting(String filename) throws SysUtilsException, IOException  {
         String dirname = SysUtils.getDirName(filename);
         SysUtils.mkdir_p(dirname);
         Files.deleteIfExists(Paths.get(filename));

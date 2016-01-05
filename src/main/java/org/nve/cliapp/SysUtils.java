@@ -1,6 +1,7 @@
 package org.nve.cliapp;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -31,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Just a few methods to help with System level stuff by utilizing standard Java
@@ -562,6 +565,8 @@ public final class SysUtils {
     }
 
     /**
+     * Method for CHARACTER IO, not binary. (see the encoding param??)
+     * 
      * Get a BufferedReader instance for the following encoding types.
      *
      * ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
@@ -569,17 +574,32 @@ public final class SysUtils {
      * @param filename
      * @param encoding
      * @return
-     * @throws FileNotFoundException
-     * @throws UnsupportedEncodingException
+     * @throws org.nve.cliapp.SysUtilsException
      */
-    public static BufferedReader getBufferedReaderInstance(String filename, String encoding) throws FileNotFoundException, UnsupportedEncodingException {
-        File file = new File(filename);
-        FileInputStream fis = new FileInputStream(file);
-        InputStreamReader isr = new InputStreamReader(fis, encoding);
-        return (new BufferedReader(isr));
+    public static BufferedReader getBufferedReaderInstance(String filename, String encoding) throws SysUtilsException {
+        BufferedReader br = null;
+
+        try {
+            File file = new File(filename);
+            FileInputStream fis = new FileInputStream(file);
+            InputStreamReader isr = new InputStreamReader(fis, encoding);
+            br = new BufferedReader(isr);
+        } catch (FileNotFoundException ex) {
+            String msg = "ERROR: FileNotFoundException " + SysUtils.class.getName() + "(" + filename + ", " + encoding + ")\n";
+            msg += "\n" + ex.getMessage() + "\n";
+            throw new SysUtilsException(msg);
+        } catch (UnsupportedEncodingException ex) {
+            String msg = "ERROR: UnsupportedEncodingException " + SysUtils.class.getName() + "(" + filename + ", " + encoding + ")\n";
+            msg += "\n" + ex.getMessage() + "\n";
+            throw new SysUtilsException(msg);
+        }  
+        
+        return (br);
     }
 
     /**
+     * Method for CHARACTER IO, not binary. (see the encoding param??)
+     *
      * Get a BufferedWriter instance for the following encoding types. This
      * method can either APPEND or OVERWRITE file depending on 3rd param.
      *
@@ -589,14 +609,44 @@ public final class SysUtils {
      * @param encoding
      * @param appendToFile
      * @return
-     * @throws FileNotFoundException
-     * @throws UnsupportedEncodingException
+     * @throws org.nve.cliapp.SysUtilsException
      */
-    public static BufferedWriter getBufferedWriterInstance(String filename, String encoding, boolean appendToFile) throws FileNotFoundException, UnsupportedEncodingException, IOException {
-        File file = new File(filename);
-        FileOutputStream fos = new FileOutputStream(file, appendToFile);
-        OutputStreamWriter osw = new OutputStreamWriter(fos, encoding);
-        return (new BufferedWriter(osw));
+    public static BufferedWriter getBufferedWriterInstance(String filename, String encoding, boolean appendToFile) throws SysUtilsException {
+        BufferedWriter bw = null;
+        
+        try {
+            File file = new File(filename);
+            FileOutputStream fos = new FileOutputStream(file, appendToFile);
+            OutputStreamWriter osw = new OutputStreamWriter(fos, encoding);
+            bw = new BufferedWriter(osw);
+        } catch (FileNotFoundException ex) {
+            String msg = "ERROR: FileNotFoundException " + SysUtils.class.getName() + "(" + filename + ", " + encoding + ")\n";
+            msg += "\n" + ex.getMessage() + "\n";
+            throw new SysUtilsException(msg);
+        } catch (UnsupportedEncodingException ex) {
+            String msg = "ERROR: UnsupportedEncodingException " + SysUtils.class.getName() + "(" + filename + ", " + encoding + ")\n";
+            msg += "\n" + ex.getMessage() + "\n";
+            throw new SysUtilsException(msg);
+        } 
+        
+        return (bw);
+    }
+
+    
+    public static BufferedInputStream getBufferedInputStream(String filename) throws SysUtilsException {
+        BufferedInputStream bis = null;
+
+        try {
+            File file = new File(filename);
+            FileInputStream fis = new FileInputStream(file);
+            bis = new BufferedInputStream(fis);
+        } catch (FileNotFoundException ex) {
+            String msg = "ERROR: FileNotFoundException " + SysUtils.class.getName() + "(" + filename + ")\n";
+            msg += "\n" + ex.getMessage() + "\n";
+            throw new SysUtilsException(msg);
+        } 
+
+        return (bis);
     }
 
     /**
@@ -609,8 +659,8 @@ public final class SysUtils {
      * @param encoding
      * @return List&lt;String&gt;
      * @throws org.nve.cliapp.SysUtilsException
-    */
-    public static List<String> readTextFile(String filename, String encoding) throws SysUtilsException  {
+     */
+    public static List<String> readTextFile(String filename, String encoding) throws SysUtilsException {
         List<String> records = new ArrayList<>();
         String line;
 
@@ -619,19 +669,8 @@ public final class SysUtils {
             while ((line = breader.readLine()) != null) {
                 records.add(line);
             }
-        } catch (UnsupportedEncodingException ex) {
+        } catch (SysUtilsException | IOException ex) {
             String msg = "ERROR: readTextFile(" + filename + ", " + encoding + ")\n";
-            msg += "\nUnsupportedEncodingException\n";
-            msg += ex.getMessage();
-            throw new SysUtilsException(msg);
-        } catch (FileNotFoundException ex) {
-            String msg = "ERROR: readTextFile(" + filename + ", " + encoding + ")\n";
-            msg += "\nFileNotFoundException\n";
-            msg += ex.getMessage();
-            throw new SysUtilsException(msg);
-        } catch (IOException ex) {
-            String msg = "ERROR: readTextFile(" + filename + ", " + encoding + ")\n";
-            msg += "\nIOException\n";
             msg += ex.getMessage();
             throw new SysUtilsException(msg);
         }
@@ -641,27 +680,28 @@ public final class SysUtils {
 
     /**
      * Convenience overloaded method.
-     * 
+     *
      * @param filename
      * @param listStrings
      * @param encoding
-     * @throws SysUtilsException 
+     * @throws SysUtilsException
      */
-    public static void writeTextFile(String filename, List<String> listStrings, String encoding) throws SysUtilsException  {
+    public static void writeTextFile(String filename, List<String> listStrings, String encoding) throws SysUtilsException {
         SysUtils.writeTextFile(filename, listStrings, encoding, false);
     }
-    
+
     /**
      * Convenience overloaded method.
+     *
      * @param filename
      * @param listStrings
      * @param encoding
-     * @throws SysUtilsException 
+     * @throws SysUtilsException
      */
-    public static void appendTextFile(String filename, List<String> listStrings, String encoding) throws SysUtilsException  {
+    public static void appendTextFile(String filename, List<String> listStrings, String encoding) throws SysUtilsException {
         SysUtils.writeTextFile(filename, listStrings, encoding, true);
     }
-    
+
     /**
      * Write List of Strings to an encoded text file.
      *
@@ -673,34 +713,23 @@ public final class SysUtils {
      * @param appendToFile
      * @throws org.nve.cliapp.SysUtilsException
      */
-    public static void writeTextFile(String filename, List<String> listStrings, String encoding, boolean appendToFile) throws SysUtilsException  {
+    public static void writeTextFile(String filename, List<String> listStrings, String encoding, boolean appendToFile) throws SysUtilsException {
         // Ensure the directory is created for filename.
         String dirname = SysUtils.getDirName(filename);
         SysUtils.mkdir_p(dirname);
-        
+
         // Try with resources will close the Buffered Writer in all events.  Java 1.7+
-        try (BufferedWriter writer = new BufferedWriter(getBufferedWriterInstance(filename, encoding, appendToFile))) {
+        try (BufferedWriter writer = SysUtils.getBufferedWriterInstance(filename, encoding, appendToFile)) {
             for (int ii = 0; ii < listStrings.size(); ii++) {
                 writer.write(listStrings.get(ii));
                 writer.newLine();
             }
             writer.flush();
-        } catch (UnsupportedEncodingException ex) {
+        } catch (SysUtilsException | IOException ex) {
             String msg = "ERROR: writeTextFile(" + filename + ", " + encoding + ")\n";
-            msg += "\nUnsupportedEncodingException\n";
             msg += ex.getMessage();
             throw new SysUtilsException(msg);
-        }catch (FileNotFoundException ex) {
-            String msg = "ERROR: writeTextFile(" + filename + ", " + encoding + ")\n";
-            msg += "\nFileNotFoundException\n";
-            msg += ex.getMessage();
-            throw new SysUtilsException(msg);
-        } catch (IOException ex) {
-            String msg = "ERROR: writeTextFile(" + filename + ", " + encoding + ")\n";
-            msg += "\nIOException\n";
-            msg += ex.getMessage();
-            throw new SysUtilsException(msg);
-        }        
+        }  
     }
 
 }
