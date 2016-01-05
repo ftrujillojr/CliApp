@@ -3,6 +3,7 @@ package org.nve.cliapp;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,7 +13,7 @@ import java.util.regex.Pattern;
  *
  * The second goal is to have static methods to use without having to think
  * about regex pattern matching.
- * 
+ *
  * *** Set TestRegExp.java for examples.
  *
  */
@@ -24,10 +25,10 @@ public class RegExp {
     }
 
     /**
-     * Split a String on whitespace and return List<String>
-     * 
+     * Split a String on whitespace and return List&lt;String&gt;
+     *
      * @param myString
-     * @return List<String>
+     * @return List&lt;String&gt;
      */
     public static List<String> split(String myString) {
         String myRegEx = "[ \t\n]+";
@@ -39,11 +40,11 @@ public class RegExp {
     }
 
     /**
-     * Split a String on regexp and return List<String>
-     * 
+     * Split a String on regexp and return List&lt;String&gt;
+     *
      * @param myRegEx
      * @param myString
-     * @return List<String>
+     * @return List&lt;String&gt;
      */
     public static List<String> split(String myRegEx, String myString) {
         Pattern pattern = Pattern.compile(myRegEx);
@@ -89,13 +90,34 @@ public class RegExp {
     }
 
     /**
+     * This just allows me to check if two objects are the same or not.
+     * I left this public.  Maybe someone will use it.
+     * 
+     * @param o
+     * @return 
+     */
+    public static String objectToString(Object o) {
+        //prevent a NullPointerException by returning null if o is null
+        String result = null;
+        if (o != null) {
+            result = o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
+        }
+        return result;
+    }
+
+    /**
      * After you call isMatch() or other public methods, then subExps will
      * contain the LAST group match.
      *
      * @return
      */
     public static List<String> getSubExps() {
-        return subExps;
+        // I want a new object to hold the sub expression results.
+        List<String> newSubExps = new ArrayList<>(subExps);
+//        String str1 = RegExp.objectToString(subExps);
+//        String str2 = RegExp.objectToString(newSubExps);
+//        System.out.println(str1 + " <=> " + str2);
+        return newSubExps;
     }
 
     /**
