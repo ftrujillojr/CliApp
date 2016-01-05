@@ -619,12 +619,19 @@ public final class SysUtils {
             while ((line = breader.readLine()) != null) {
                 records.add(line);
             }
-        } catch (FileNotFoundException ex) {
-            String msg = "ERROR: readTextFile(" + filename + ", " + encoding + ")";
+        } catch (UnsupportedEncodingException ex) {
+            String msg = "ERROR: readTextFile(" + filename + ", " + encoding + ")\n";
+            msg += "\nUnsupportedEncodingException\n";
             msg += ex.getMessage();
             throw new SysUtilsException(msg);
-        }catch (IOException ex) {
-            String msg = "ERROR: readTextFile(" + filename + ", " + encoding + ")";
+        } catch (FileNotFoundException ex) {
+            String msg = "ERROR: readTextFile(" + filename + ", " + encoding + ")\n";
+            msg += "\nFileNotFoundException\n";
+            msg += ex.getMessage();
+            throw new SysUtilsException(msg);
+        } catch (IOException ex) {
+            String msg = "ERROR: readTextFile(" + filename + ", " + encoding + ")\n";
+            msg += "\nIOException\n";
             msg += ex.getMessage();
             throw new SysUtilsException(msg);
         }
@@ -678,12 +685,19 @@ public final class SysUtils {
                 writer.newLine();
             }
             writer.flush();
-        } catch (FileNotFoundException ex) {
-            String msg = "ERROR: writeTextFile(" + filename + ", " + encoding + ")";
+        } catch (UnsupportedEncodingException ex) {
+            String msg = "ERROR: writeTextFile(" + filename + ", " + encoding + ")\n";
+            msg += "\nUnsupportedEncodingException\n";
+            msg += ex.getMessage();
+            throw new SysUtilsException(msg);
+        }catch (FileNotFoundException ex) {
+            String msg = "ERROR: writeTextFile(" + filename + ", " + encoding + ")\n";
+            msg += "\nFileNotFoundException\n";
             msg += ex.getMessage();
             throw new SysUtilsException(msg);
         } catch (IOException ex) {
-            String msg = "ERROR: writeTextFile(" + filename + ", " + encoding + ")";
+            String msg = "ERROR: writeTextFile(" + filename + ", " + encoding + ")\n";
+            msg += "\nIOException\n";
             msg += ex.getMessage();
             throw new SysUtilsException(msg);
         }        
