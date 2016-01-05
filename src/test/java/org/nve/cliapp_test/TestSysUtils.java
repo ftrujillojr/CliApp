@@ -292,7 +292,7 @@ public class TestSysUtils {
 
         // Cleanup
         // Remove the tmp file tree.
-        //SysUtils.rmDirTree(SysUtils.getDirName(filename));
+        SysUtils.rmDirTree(SysUtils.getDirName(filename));
     }
 
 }
