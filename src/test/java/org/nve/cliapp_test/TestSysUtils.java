@@ -294,5 +294,19 @@ public class TestSysUtils {
         // Remove the tmp file tree.
         SysUtils.rmDirTree(SysUtils.getDirName(filename));
     }
+    
+    @Test
+    public void testWriteReadBinaryFile() throws SysUtilsException {
+        // ARRANGE 
+        String filename = Paths.get(SysUtils.getTmpDir(), "testWriteReadBinaryFile", "file.bin").toString();
+        String expectData = "abc123 --++\n\t@!?/";
+        
+        // ACT
+        SysUtils.writeBinaryFile(filename, expectData, true);
+        
+        // ASSERT
+        String actualData = SysUtils.readBinaryFile(filename);
+        System.out.println("ACTUAL " + actualData);
+    }
 
 }

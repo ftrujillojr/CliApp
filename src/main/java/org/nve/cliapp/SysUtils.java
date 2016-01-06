@@ -72,6 +72,8 @@ public final class SysUtils {
     private static PrintStream savedStderr = System.err; // This is what stderr is originally
     private static boolean verbose = false;
 
+    private static int binaryBufferSize = 16 * 1024; // use in mulitples of 1024 please.
+
     public SysUtils() {
     }
 
@@ -566,7 +568,7 @@ public final class SysUtils {
 
     /**
      * Method for CHARACTER IO, not binary. (see the encoding param??)
-     * 
+     *
      * Get a BufferedReader instance for the following encoding types.
      *
      * ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
@@ -592,8 +594,8 @@ public final class SysUtils {
             String msg = "ERROR: UnsupportedEncodingException " + SysUtils.class.getName() + "(" + filename + ", " + encoding + ")\n";
             msg += "\n" + ex.getMessage() + "\n";
             throw new SysUtilsException(msg);
-        }  
-        
+        }
+
         return (br);
     }
 
@@ -613,7 +615,7 @@ public final class SysUtils {
      */
     public static BufferedWriter getBufferedWriterInstance(String filename, String encoding, boolean appendToFile) throws SysUtilsException {
         BufferedWriter bw = null;
-        
+
         try {
             File file = new File(filename);
             FileOutputStream fos = new FileOutputStream(file, appendToFile);
@@ -627,28 +629,97 @@ public final class SysUtils {
             String msg = "ERROR: UnsupportedEncodingException " + SysUtils.class.getName() + "(" + filename + ", " + encoding + ")\n";
             msg += "\n" + ex.getMessage() + "\n";
             throw new SysUtilsException(msg);
-        } 
-        
+        }
+
         return (bw);
     }
 
-    
+    /**
+     *  BINARY 
+     *
+     * @param filename
+     * @return
+     * @throws SysUtilsException
+     */
     public static BufferedInputStream getBufferedInputStream(String filename) throws SysUtilsException {
         BufferedInputStream bis = null;
 
         try {
             File file = new File(filename);
             FileInputStream fis = new FileInputStream(file);
-            bis = new BufferedInputStream(fis);
+            bis = new BufferedInputStream(fis, SysUtils.binaryBufferSize);
         } catch (FileNotFoundException ex) {
             String msg = "ERROR: FileNotFoundException " + SysUtils.class.getName() + "(" + filename + ")\n";
             msg += "\n" + ex.getMessage() + "\n";
             throw new SysUtilsException(msg);
-        } 
+        }
 
         return (bis);
     }
 
+    
+    
+    public static String readBinaryFile(String filename) throws SysUtilsException {
+        StringBuilder sb = new StringBuilder();
+        
+        // try with resources will close BufferedInputStream and all of its derived streams.
+        try (BufferedInputStream bis = SysUtils.getBufferedInputStream(filename)) {
+            String strFileContents;
+            byte[] contents = new byte[SysUtils.binaryBufferSize];
+            int bytesRead;
+            
+            while((bytesRead = bis.read(contents)) != -1) {
+                strFileContents = new String(contents, 0, bytesRead);
+                sb.append(strFileContents);
+            }
+            
+        } catch (SysUtilsException | IOException ex) {
+            String msg = "ERROR: " + SysUtils.class.getName() + "(" + filename + ")\n";
+            msg += "\n" + ex.getMessage() + "\n";
+            throw new SysUtilsException(msg);
+        }
+
+        return sb.toString();
+    }
+
+    
+    
+    public static BufferedOutputStream getBufferedOutputStream(String filename, boolean append) throws SysUtilsException {
+        BufferedOutputStream bos = null;
+
+        try {
+            File file = new File(filename);
+            FileOutputStream fos = new FileOutputStream(file, append);
+            bos = new BufferedOutputStream(fos, SysUtils.binaryBufferSize);
+        } catch (FileNotFoundException ex) {
+            String msg = "ERROR: FileNotFoundException " + SysUtils.class.getName() + "(" + filename + ")\n";
+            msg += "\n" + ex.getMessage() + "\n";
+            throw new SysUtilsException(msg);
+        }
+
+        return (bos);
+    }
+
+    
+    public static void writeBinaryFile(String filename, String data, boolean append) throws SysUtilsException {
+        // Ensure the directory is created for filename.
+        String dirname = SysUtils.getDirName(filename);
+        SysUtils.mkdir_p(dirname);
+        
+        // try with resources will close BufferedOutputStream and all of its derived streams.
+        try (BufferedOutputStream bos = SysUtils.getBufferedOutputStream(filename, append)) {
+            bos.write(data.getBytes());
+            bos.flush();
+            bos.close();
+        } catch (SysUtilsException | IOException ex) {
+            String msg = "ERROR: " + SysUtils.class.getName() + "(" + filename + ")\n";
+            msg += "\n" + ex.getMessage() + "\n";
+            throw new SysUtilsException(msg);
+        }
+
+    }
+
+    
     /**
      * Open and read a text file using specified encoding, and return the lines
      * in the file as a list of Strings.
@@ -729,7 +800,7 @@ public final class SysUtils {
             String msg = "ERROR: writeTextFile(" + filename + ", " + encoding + ")\n";
             msg += ex.getMessage();
             throw new SysUtilsException(msg);
-        }  
+        }
     }
 
 }
