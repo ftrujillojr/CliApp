@@ -12,7 +12,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
@@ -35,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Just a few methods to help with System level stuff by utilizing standard Java
@@ -381,7 +378,7 @@ public final class SysUtils {
     }
 
     /**
-     * Since this is NOT intuitive, I tested this extensively. This method a
+     * Since this is NOT intuitive, I tested this extensively. This method is
      * used in ffind() to walk the tree;
      *
      * We are skipping over repository [git, svn, cvs, mecurial, sccs]
@@ -707,13 +704,13 @@ public final class SysUtils {
         List<String> records = new ArrayList<>();
         String line;
 
-        // try with resources will close BufferedReader instance.
-        try (BufferedReader breader = SysUtils.getBufferedReaderInstance(filename, encoding)) {
+        // try with resources will autoclose BufferedReader instance.
+        try (BufferedReader breader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filename)), encoding))) {
             while ((line = breader.readLine()) != null) {
                 records.add(line);
             }
-        } catch (SysUtilsException | IOException ex) {
-            String msg = "ERROR: readTextFile(" + filename + ", " + encoding + ")\n";
+        } catch (IOException ex) {
+            String msg = "ERROR: IOException  readTextFile(" + filename + ", " + encoding + ")\n";
             msg += ex.getMessage();
             throw new SysUtilsException(msg);
         }
@@ -724,6 +721,8 @@ public final class SysUtils {
     /**
      * Convenience overloaded method.
      *
+     * encoding can be => ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
+     * 
      * @param filename
      * @param listStrings
      * @param encoding
@@ -736,6 +735,8 @@ public final class SysUtils {
     /**
      * Convenience overloaded method.
      *
+     * encoding can be => ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
+     * 
      * @param filename
      * @param listStrings
      * @param encoding
