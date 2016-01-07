@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -116,7 +117,7 @@ public class TestSysUtils {
     }
 
     // THIS IS NOT A TEST.
-    private static void createEmptyFileForTesting(String filename) throws SysUtilsException, IOException  {
+    private static void createEmptyFileForTesting(String filename) throws SysUtilsException, IOException {
         String dirname = SysUtils.getDirName(filename);
         SysUtils.mkdir_p(dirname);
         Files.deleteIfExists(Paths.get(filename));
@@ -257,7 +258,6 @@ public class TestSysUtils {
 
         // This should not be in filename.  The restoreStdout() has already been called.
         //System.out.println("Done with REDIRECT stdout test. Read back filename => " + filename);
-        
         // ACT2 - read results into List<String>.
         List<String> actualResults = SysUtils.readTextFile(filename, "UTF-8");
 
@@ -286,7 +286,7 @@ public class TestSysUtils {
             List<String> actualData = SysUtils.readTextFile(filename, encodings[ii]);
 
             // ASSERT
-            if(! expectData.equals(actualData)) {
+            if (!expectData.equals(actualData)) {
                 System.out.println("FAILED test for encoding: testWriteReadTextFile() => " + encodings[ii]);
             }
             assertEquals(expectData, actualData);
@@ -296,7 +296,7 @@ public class TestSysUtils {
         // Remove the tmp file tree.
         SysUtils.rmDirTree(SysUtils.getDirName(filename));
     }
-    
+
     @Test
     public void testWriteReadBinaryFile() throws SysUtilsException {
         // ARRANGE 
@@ -304,20 +304,31 @@ public class TestSysUtils {
         String filename2 = Paths.get(SysUtils.getTmpDir(), "testWriteReadBinaryFile", "file2.bin").toString();
         String data = "abc123abc123ABC098-=  %^ -V!@()\t\n\rabc";
         byte[] expectData = data.getBytes();
-            
+
         // ACT - write/read => test overloaded write methods.
         SysUtils.writeBinaryFile(filename, data.getBytes(), false);
         SysUtils.writeBinaryFile(filename2, expectData, false);
-        
+
         byte[] actualData = SysUtils.readBinaryFile(filename);
         byte[] actualData2 = SysUtils.readBinaryFile(filename2);
 
-        SysUtils.displayHexDump(actualData);
-        
         // ASSERT
+        if (! Arrays.equals(expectData, actualData)) {
+            System.out.println("EXPECT");
+            SysUtils.displayHexDump(expectData);
+            System.out.println("ACTUAL");
+            SysUtils.displayHexDump(actualData);
+        }
         assertArrayEquals(expectData, actualData);
-        assertArrayEquals(expectData, actualData2);
         
+        if (! Arrays.equals(expectData, actualData2)) {
+            System.out.println("EXPECT");
+            SysUtils.displayHexDump(expectData);
+            System.out.println("ACTUAL");
+            SysUtils.displayHexDump(actualData2);
+        }
+        assertArrayEquals(expectData, actualData2);
+
         // Cleanup
         // Remove the tmp file tree.
         SysUtils.rmDirTree(SysUtils.getDirName(filename));
