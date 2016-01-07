@@ -775,5 +775,44 @@ public final class SysUtils {
             throw new SysUtilsException(msg);
         }
     }
+    
+    /**
+     * Does not require external libraries.  Only base Java.
+     * 
+     * @param str
+     * @param n
+     * @return 
+     */
+    public static String repeatString(String str, int n) {
+        return (new String(new char[n]).replace("\0", str));
+    }
+    
+    
+    /**
+     * Simple display byte[] as hex table.
+     * 
+     * @param byteArray 
+     */
+    public static void displayHexDump(byte[] byteArray) {
+        String dash = "-";
+        
+        System.out.print(String.format("\n%8s  ", " "));
+        for(int ii = 0; ii < 16; ii++) {
+            System.out.print(String.format(" %02x ", ii));
+        }
+        System.out.println("");
+        System.out.print(repeatString(dash, 10+(16*4)));
+        
+        for(int ii = 0; ii < byteArray.length; ii++) {
+            if((ii%16) == 0) {
+                System.out.println();
+                System.out.print(String.format("%08x  ", ii));
+            }
+            
+            System.out.print(String.format(" %02x ", byteArray[ii]));            
+        }
+        
+        System.out.println("\n");
+    }
 
 }

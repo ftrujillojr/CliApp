@@ -302,7 +302,7 @@ public class TestSysUtils {
         // ARRANGE 
         String filename = Paths.get(SysUtils.getTmpDir(), "testWriteReadBinaryFile", "file.bin").toString();
         String filename2 = Paths.get(SysUtils.getTmpDir(), "testWriteReadBinaryFile", "file2.bin").toString();
-        String data = "abc123abc123ABC098-=  %^ -V!@()\t\n\r";
+        String data = "abc123abc123ABC098-=  %^ -V!@()\t\n\rabc";
         byte[] expectData = data.getBytes();
             
         // ACT - write/read => test overloaded write methods.
@@ -311,6 +311,8 @@ public class TestSysUtils {
         
         byte[] actualData = SysUtils.readBinaryFile(filename);
         byte[] actualData2 = SysUtils.readBinaryFile(filename2);
+
+        SysUtils.displayHexDump(actualData);
         
         // ASSERT
         assertArrayEquals(expectData, actualData);
