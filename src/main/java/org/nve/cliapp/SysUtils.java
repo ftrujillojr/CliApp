@@ -1,5 +1,7 @@
 package org.nve.cliapp;
 
+import java.io.DataOutputStream;
+import java.io.DataInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -10,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
@@ -635,91 +638,60 @@ public final class SysUtils {
     }
 
     /**
-     *  BINARY 
-     *
+     * This is a convenience method to help with the stream resource nightmare AND
+     * using a BufferedInputStream to maximize reads from a file.
+     * 
      * @param filename
      * @return
-     * @throws SysUtilsException
+     * @throws SysUtilsException 
      */
-    public static BufferedInputStream getBufferedInputStream(String filename) throws SysUtilsException {
-        BufferedInputStream bis = null;
-
-        try {
-            File file = new File(filename);
-            FileInputStream fis = new FileInputStream(file);
-            bis = new BufferedInputStream(fis, SysUtils.binaryBufferSize);
-        } catch (FileNotFoundException ex) {
-            String msg = "ERROR: FileNotFoundException " + SysUtils.class.getName() + "(" + filename + ")\n";
-            msg += "\n" + ex.getMessage() + "\n";
-            throw new SysUtilsException(msg);
-        }
-
-        return (bis);
-    }
-
-    
-    
-    public static String readBinaryFile(String filename) throws SysUtilsException {
+    public static byte[] readBinaryFile(String filename) throws SysUtilsException {
+        // I am using StringBuilder to store up all bytes and then return byte[].
         StringBuilder sb = new StringBuilder();
-        
-        // try with resources will close BufferedInputStream and all of its derived streams.
-        try (BufferedInputStream bis = SysUtils.getBufferedInputStream(filename)) {
+
+        // try(with resources)    will close DataInputStream and all of its derived streams.
+        try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(new File(filename)), SysUtils.binaryBufferSize))) {
             String strFileContents;
             byte[] contents = new byte[SysUtils.binaryBufferSize];
             int bytesRead;
-            
-            while((bytesRead = bis.read(contents)) != -1) {
+
+            while ((bytesRead = dis.read(contents)) != -1) {
                 strFileContents = new String(contents, 0, bytesRead);
                 sb.append(strFileContents);
             }
-            
-        } catch (SysUtilsException | IOException ex) {
-            String msg = "ERROR: " + SysUtils.class.getName() + "(" + filename + ")\n";
+        } catch (IOException ex) {
+            String msg = "ERROR: IOException " + SysUtils.class.getName() + "(" + filename + ")\n";
             msg += "\n" + ex.getMessage() + "\n";
             throw new SysUtilsException(msg);
         }
 
-        return sb.toString();
+        return sb.toString().getBytes();
     }
 
-    
-    
-    public static BufferedOutputStream getBufferedOutputStream(String filename, boolean append) throws SysUtilsException {
-        BufferedOutputStream bos = null;
-
-        try {
-            File file = new File(filename);
-            FileOutputStream fos = new FileOutputStream(file, append);
-            bos = new BufferedOutputStream(fos, SysUtils.binaryBufferSize);
-        } catch (FileNotFoundException ex) {
-            String msg = "ERROR: FileNotFoundException " + SysUtils.class.getName() + "(" + filename + ")\n";
-            msg += "\n" + ex.getMessage() + "\n";
-            throw new SysUtilsException(msg);
-        }
-
-        return (bos);
-    }
-
-    
-    public static void writeBinaryFile(String filename, String data, boolean append) throws SysUtilsException {
+    /**
+     * Write byte[] to filename with option to append data.
+     * 
+     * @param filename
+     * @param byteData
+     * @param append
+     * @throws SysUtilsException 
+     */
+    public static void writeBinaryFile(String filename, byte[] byteData, boolean append) throws SysUtilsException {
         // Ensure the directory is created for filename.
         String dirname = SysUtils.getDirName(filename);
         SysUtils.mkdir_p(dirname);
-        
-        // try with resources will close BufferedOutputStream and all of its derived streams.
-        try (BufferedOutputStream bos = SysUtils.getBufferedOutputStream(filename, append)) {
-            bos.write(data.getBytes());
-            bos.flush();
-            bos.close();
-        } catch (SysUtilsException | IOException ex) {
+
+        // try(with resources)      will close DataOutputStream and all of its derived streams.
+        try (DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(new File(filename), append), SysUtils.binaryBufferSize))) {
+            dos.write(byteData);
+            dos.flush();
+        } catch (IOException ex) {
             String msg = "ERROR: " + SysUtils.class.getName() + "(" + filename + ")\n";
             msg += "\n" + ex.getMessage() + "\n";
             throw new SysUtilsException(msg);
         }
-
     }
 
-    
     /**
      * Open and read a text file using specified encoding, and return the lines
      * in the file as a list of Strings.
@@ -788,16 +760,16 @@ public final class SysUtils {
         // Ensure the directory is created for filename.
         String dirname = SysUtils.getDirName(filename);
         SysUtils.mkdir_p(dirname);
-
+        
         // Try with resources will close the Buffered Writer in all events.  Java 1.7+
-        try (BufferedWriter writer = SysUtils.getBufferedWriterInstance(filename, encoding, appendToFile)) {
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(filename), appendToFile), encoding))) {
             for (int ii = 0; ii < listStrings.size(); ii++) {
                 writer.write(listStrings.get(ii));
                 writer.newLine();
             }
             writer.flush();
-        } catch (SysUtilsException | IOException ex) {
-            String msg = "ERROR: writeTextFile(" + filename + ", " + encoding + ")\n";
+        } catch (IOException ex) {
+            String msg = "ERROR: IOException writeTextFile(" + filename + ", " + encoding + ")\n";
             msg += ex.getMessage();
             throw new SysUtilsException(msg);
         }

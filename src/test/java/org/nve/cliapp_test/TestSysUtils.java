@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -24,6 +25,7 @@ import org.junit.Test;
 import org.nve.cliapp.RegExp;
 import org.nve.cliapp.SysUtils;
 import org.nve.cliapp.SysUtilsException;
+
 //import org.junit.Ignore;
 
 /*   ARRANGE    ACT    ASSERT
@@ -299,14 +301,24 @@ public class TestSysUtils {
     public void testWriteReadBinaryFile() throws SysUtilsException {
         // ARRANGE 
         String filename = Paths.get(SysUtils.getTmpDir(), "testWriteReadBinaryFile", "file.bin").toString();
-        String expectData = "abc123 --++\n\t@!?/";
+        String filename2 = Paths.get(SysUtils.getTmpDir(), "testWriteReadBinaryFile", "file2.bin").toString();
+        String data = "abc123abc123ABC098-=  %^ -V!@()\t\n\r";
+        byte[] expectData = data.getBytes();
+            
+        // ACT - write/read => test overloaded write methods.
+        SysUtils.writeBinaryFile(filename, data.getBytes(), false);
+        SysUtils.writeBinaryFile(filename2, expectData, false);
         
-        // ACT
-        SysUtils.writeBinaryFile(filename, expectData, true);
+        byte[] actualData = SysUtils.readBinaryFile(filename);
+        byte[] actualData2 = SysUtils.readBinaryFile(filename2);
         
         // ASSERT
-        String actualData = SysUtils.readBinaryFile(filename);
-        System.out.println("ACTUAL " + actualData);
+        assertArrayEquals(expectData, actualData);
+        assertArrayEquals(expectData, actualData2);
+        
+        // Cleanup
+        // Remove the tmp file tree.
+        SysUtils.rmDirTree(SysUtils.getDirName(filename));
     }
 
 }
