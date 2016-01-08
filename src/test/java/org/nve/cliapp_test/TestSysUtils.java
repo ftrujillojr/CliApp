@@ -5,6 +5,7 @@ package org.nve.cliapp_test;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -298,36 +299,56 @@ public class TestSysUtils {
     }
 
     @Test
-    public void testWriteReadBinaryFile() throws SysUtilsException {
+    public void testWriteReadBinaryFile() throws SysUtilsException, UnsupportedEncodingException {
         // ARRANGE 
         String filename = Paths.get(SysUtils.getTmpDir(), "testWriteReadBinaryFile", "file.bin").toString();
         String filename2 = Paths.get(SysUtils.getTmpDir(), "testWriteReadBinaryFile", "file2.bin").toString();
+        String filename3 = Paths.get(SysUtils.getTmpDir(), "testWriteReadBinaryFile", "file3.bin").toString();
         String data = "abc123abc123ABC098-=  %^ -V!@()\t\n\rabc";
-        byte[] expectData = data.getBytes();
+        byte[] expectData = data.getBytes("UTF-8"); // defaults to UTF-8
+        byte[] expectData2 = data.getBytes("UTF-16LE");
+        byte[] expectData3 = data.getBytes("UTF-16BE");
 
         // ACT - write/read => test overloaded write methods.
-        SysUtils.writeBinaryFile(filename, data.getBytes(), false);
-        SysUtils.writeBinaryFile(filename2, expectData, false);
+        SysUtils.writeBinaryFile(filename, expectData, false);
+        SysUtils.writeBinaryFile(filename2, expectData2, false);
+        SysUtils.writeBinaryFile(filename3, expectData3, false);
 
         byte[] actualData = SysUtils.readBinaryFile(filename);
         byte[] actualData2 = SysUtils.readBinaryFile(filename2);
+        byte[] actualData3 = SysUtils.readBinaryFile(filename3);
 
         // ASSERT
-        if (! Arrays.equals(expectData, actualData)) {
+        if (!Arrays.equals(expectData, actualData)) {
             System.out.println("EXPECT");
             SysUtils.displayHexDump(expectData);
             System.out.println("ACTUAL");
             SysUtils.displayHexDump(actualData);
-        }
+        } 
         assertArrayEquals(expectData, actualData);
-        
-        if (! Arrays.equals(expectData, actualData2)) {
+
+        if (!Arrays.equals(expectData2, actualData2)) {
             System.out.println("EXPECT");
-            SysUtils.displayHexDump(expectData);
+            SysUtils.displayHexDump(expectData2);
             System.out.println("ACTUAL");
             SysUtils.displayHexDump(actualData2);
         }
-        assertArrayEquals(expectData, actualData2);
+        assertArrayEquals(expectData2, actualData2);
+        
+        if (!Arrays.equals(expectData3, actualData3)) {
+            System.out.println("EXPECT");
+            SysUtils.displayHexDump(expectData3);
+            System.out.println("ACTUAL");
+            SysUtils.displayHexDump(actualData3);
+        }
+        assertArrayEquals(expectData3, actualData3);
+
+        System.out.println("============= UTF-8 =====================");
+        SysUtils.displayHexDump(expectData);
+        System.out.println("============= UTF-16LE ==================");
+        SysUtils.displayHexDump(expectData2);
+        System.out.println("============= UTF-16BE ==================");
+        SysUtils.displayHexDump(expectData3);
 
         // Cleanup
         // Remove the tmp file tree.
