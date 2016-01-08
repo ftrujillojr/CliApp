@@ -305,7 +305,7 @@ public class TestSysUtils {
         String filename2 = Paths.get(SysUtils.getTmpDir(), "testWriteReadBinaryFile", "file2.bin").toString();
         String filename3 = Paths.get(SysUtils.getTmpDir(), "testWriteReadBinaryFile", "file3.bin").toString();
         String data = "abc123abc123ABC098-=  %^ -V!@()\t\n\rabc";
-        byte[] expectData = data.getBytes("UTF-8"); // defaults to UTF-8
+        byte[] expectData = data.getBytes("UTF-8"); // defaults to UTF-8 if no argument.
         byte[] expectData2 = data.getBytes("UTF-16LE");
         byte[] expectData3 = data.getBytes("UTF-16BE");
 
