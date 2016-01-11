@@ -5,6 +5,7 @@ package org.nve.cliapp_test;
 import java.math.BigInteger;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nve.cliapp.UnsignedBigIntUtils;
@@ -99,17 +100,16 @@ public class TestUnsignedBigIntUtils {
     }
 
     /**
-     * Give your test methods meaningful names.
+     * Test out the HEX conversion methods.
      */
     @Test
-    //@Ignore
     public void testHex2BI() throws UnsignedBigIntUtilsException {
         // ARRANGE
         String data = "0xdead | beef | ffff | 0000 | ffff | 0000 | dead | beef";
+        BigInteger biResult = UnsignedBigIntUtils.maskBitRange(UnsignedBigIntUtils.toBI(data), 31, 16);
 
         // ACT
         String expectMasked1 = "0xdead0000";
-        BigInteger biResult = UnsignedBigIntUtils.maskBitRange(UnsignedBigIntUtils.toBI(data), 31, 16);
         String actualMasked1 = UnsignedBigIntUtils.toHexString(biResult);
 
         // ASSERT
@@ -117,7 +117,7 @@ public class TestUnsignedBigIntUtils {
             System.out.println("expectMasked1 " + expectMasked1);
             System.out.println("actualMasked1 " + actualMasked1);
         }
-        Assert.assertEquals(expectMasked1, actualMasked1);
+        assertEquals(expectMasked1, actualMasked1);
 
         // ACT
         String expectPadded1 = "0x00000000dead0000";
@@ -127,7 +127,7 @@ public class TestUnsignedBigIntUtils {
             System.out.println("expectPadded1 => " + expectPadded1);
             System.out.println("actualPadded1 => " + actualPadded1);
         }
-        Assert.assertEquals(expectPadded1, actualPadded1);
+        assertEquals(expectPadded1, actualPadded1);
         
         // ACT
         String expectFormatted1 = "0x0000 | 0000 | dead | 0000";
@@ -137,8 +137,63 @@ public class TestUnsignedBigIntUtils {
             System.out.println("expectFormatted1 => " + expectFormatted1);
             System.out.println("actualFormatted1 => " + actualFormatted1);
         }
-        Assert.assertEquals(expectFormatted1, actualFormatted1);
+        assertEquals(expectFormatted1, actualFormatted1);
 
+    }
+    
+    @Test
+    public void testBin2BI() throws UnsignedBigIntUtilsException {
+        // ARRANGE
+        String data = "0b0000 0000 0000 0000 | 1111 1111 1111 1111 | 1101 1110 1010 1101 | 1011 1110 1110 1111";
+        BigInteger biResult = UnsignedBigIntUtils.binaryToBI(data);
+
+
+        // ACT
+        String expectHex1 = "0xffffdeadbeef";
+        String actualHex1 = UnsignedBigIntUtils.toHexString(biResult);
+
+        // ASSERT
+        if(expectHex1.equals(actualHex1) == false) {
+            System.out.println("expectHex1 => " + expectHex1);
+            System.out.println("actualHex1 => " + actualHex1);
+        }
+        assertEquals(expectHex1, actualHex1);
+        
+
+        // ACT
+        String expectBin1 = "0b111111111111111111011110101011011011111011101111";
+        String actualBin1 = UnsignedBigIntUtils.toBinaryString(biResult);
+        
+        // ASSERT
+        if(expectBin1.equals(actualBin1) == false) {
+            System.out.println("expectBin1 => " + expectBin1);
+            System.out.println("actualBin1 => " + actualBin1);
+        }
+        assertEquals(expectBin1, actualBin1);
+
+        // ACT
+        String expectBin2 = "0b0000 0000 0000 0000 | 1111 1111 1111 1111 | 1101 1110 1010 1101 | 1011 1110 1110 1111";
+        String actualBin2 = UnsignedBigIntUtils.toFormattedBinaryString(biResult, 64);
+        
+        // ASSERT
+        if(expectBin2.equals(actualBin2) == false) {
+            System.out.println("expectBin2 => " + expectBin2);
+            System.out.println("actualBin2 => " + actualBin2);
+        }
+        assertEquals(expectBin2, actualBin2);
+        
+        // ACT
+        String expectBin3 = "0b0000000000000000111111111111111111011110101011011011111011101111";
+        String actualBin3 = UnsignedBigIntUtils.toPaddedBinaryString(biResult, 64);
+        
+        // ASSERT
+        if(expectBin3.equals(actualBin3) == false) {
+            System.out.println("expectBin3 => " + expectBin3);
+            System.out.println("actualBin3 => " + actualBin3);
+        }
+        assertEquals(expectBin3, actualBin3);
+        
+        
     }
 
 }

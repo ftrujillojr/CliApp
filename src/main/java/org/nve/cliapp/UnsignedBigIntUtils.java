@@ -46,6 +46,12 @@ public class UnsignedBigIntUtils {
         BigInteger biResult = new BigInteger(1, UnsignedBigIntUtils.toByteArray(hexStr));
         return (biResult);
     }
+    
+    
+    public static BigInteger binaryToBI(String binStr) throws UnsignedBigIntUtilsException {
+        BigInteger biResult = new BigInteger(UnsignedBigIntUtils.validateBinaryStr(binStr), 2);
+        return biResult;
+    }
 
     // ================================================================================================================================
     /**
@@ -62,12 +68,12 @@ public class UnsignedBigIntUtils {
         sb.append("0x").append(DatatypeConverter.printHexBinary(array));
         return sb.toString();
     }
- 
+
     /**
      * Converts BigInteger to hex String with prepended 0x.
-     * 
+     *
      * @param data
-     * @return 
+     * @return
      */
     public static String toHexString(BigInteger data) {
         StringBuilder sb = new StringBuilder();
@@ -86,7 +92,6 @@ public class UnsignedBigIntUtils {
      * @throws UnsignedBigIntUtilsException
      */
     public static byte[] toByteArray(String hexStr) throws UnsignedBigIntUtilsException {
-
         return DatatypeConverter.parseHexBinary(UnsignedBigIntUtils.validateHexStr(hexStr));
     }
 
@@ -112,7 +117,7 @@ public class UnsignedBigIntUtils {
         String hexStr = UnsignedBigIntUtils.toHexString(data);
         hexStr = RegExp.replaceFirst("0x", hexStr, "");
         StringBuilder sb = new StringBuilder();
-        
+
         if (RegExp.isMatch("^0x", hexStr) == false) {
             sb.append("0x");
         }
@@ -144,9 +149,9 @@ public class UnsignedBigIntUtils {
         //BigInteger.toString(radix) does not pad to full word sizes.
         String tmpStr = UnsignedBigIntUtils.toPaddedHexString(data, numBits);
         tmpStr = RegExp.replaceFirst("0x", tmpStr, "");
-        
+
         StringBuilder formattedHexString = new StringBuilder();
-        
+
         if (RegExp.isMatch("^0x", tmpStr) == false) {
             formattedHexString.append("0x");
         }
@@ -154,7 +159,7 @@ public class UnsignedBigIntUtils {
         // If you modify anything in this loop, then you must modify tests.
         for (int ii = 0; ii < tmpStr.length(); ii++) {
             if (ii % 4 == 0 && ii != 0) {
-                formattedHexString.append(" | "); 
+                formattedHexString.append(" | ");
             }
             formattedHexString.append(tmpStr.charAt(ii));
         }
@@ -177,6 +182,77 @@ public class UnsignedBigIntUtils {
         tmpStr = RegExp.replaceFirst("0[xX]", tmpStr, "");
         if (tmpStr.matches("[0-9a-fA-F]+") == false) {
             String msg = "ERROR: Invalid HEX characters in input => " + tmpStr + "\n";
+            throw new UnsignedBigIntUtilsException(msg);
+        }
+        return (tmpStr);
+    }
+    
+    // ==========================================================================================
+
+    public static String toBinaryString(BigInteger data) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("0b").append(data.toString(2));
+        return sb.toString();
+    }
+
+    public static String toPaddedBinaryString(BigInteger data, int numBits) {
+        String binStr = UnsignedBigIntUtils.toBinaryString(data);
+        binStr = RegExp.replaceFirst("0b", binStr, "");
+        StringBuilder sb = new StringBuilder();
+
+        if (RegExp.isMatch("^0b", binStr) == false) {
+            sb.append("0b");
+        }
+
+        if (numBits > binStr.length()) {
+            for (int ii = numBits - binStr.length(); ii > 0; ii--) {
+                sb.append('0');
+            }
+        }
+        sb.append(binStr);
+        return (sb.toString());
+    }
+    
+    public static String toFormattedBinaryString(BigInteger data, int numBits) {
+        //BigInteger.toString(radix) does not pad to full word sizes.
+        String tmpStr = UnsignedBigIntUtils.toPaddedBinaryString(data, numBits);
+        tmpStr = RegExp.replaceFirst("0b", tmpStr, "");
+
+        StringBuilder formattedBinaryString = new StringBuilder();
+
+        if (RegExp.isMatch("^0b", tmpStr) == false) {
+            formattedBinaryString.append("0b");
+        }
+
+        // If you modify anything in this loop, then you must modify tests.
+        for (int ii = 0; ii < tmpStr.length(); ii++) {
+            if (ii % 16 == 0 && ii != 0) {
+                formattedBinaryString.append(" | ");
+            } else if (ii % 4 == 0 && ii != 0) {
+                formattedBinaryString.append(" ");
+            }
+            formattedBinaryString.append(tmpStr.charAt(ii));
+        }
+
+        tmpStr = formattedBinaryString.toString();
+
+        return (tmpStr);
+    }
+    
+
+    /**
+     * This method is used to compress a possible formatted binary String by
+     * stripping off leading 0b and removing white space and vertical spacers.
+     *
+     * @param binStr
+     * @return
+     * @throws UnsignedBigIntUtilsException
+     */
+    private static String validateBinaryStr(String binStr) throws UnsignedBigIntUtilsException {
+        String tmpStr = RegExp.replaceAll("[ \\|\\t\\n]+", binStr, "");
+        tmpStr = RegExp.replaceFirst("0b", tmpStr, "");
+        if (tmpStr.matches("[0-1]+") == false) {
+            String msg = "ERROR: Invalid BINARY characters in input => " + tmpStr + "\n";
             throw new UnsignedBigIntUtilsException(msg);
         }
         return (tmpStr);
