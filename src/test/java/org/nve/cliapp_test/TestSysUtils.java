@@ -298,6 +298,36 @@ public class TestSysUtils {
         SysUtils.rmDirTree(SysUtils.getDirName(filename));
     }
 
+    /**
+     * This is an example of 3 different types of binary data.
+     *
+     * *** You have to convert using String.getBytes(encodingString) ***
+     *     * 
+============= UTF-8 =====================
+     *
+     * 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
+     * --------------------------------------------------------------------------
+     * 00000000 61 62 63 31 32 33 61 62 63 31 32 33 41 42 43 30 00000010 39 38
+     * 2d 3d 20 20 25 5e 20 2d 56 21 40 28 29 09 00000020 0a 0d 61 62 63      *
+     * ============= UTF-16LE ==================
+     *
+     * 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
+     * --------------------------------------------------------------------------
+     * 00000000 61 00 62 00 63 00 31 00 32 00 33 00 61 00 62 00 00000010 63 00
+     * 31 00 32 00 33 00 41 00 42 00 43 00 30 00 00000020 39 00 38 00 2d 00 3d
+     * 00 20 00 20 00 25 00 5e 00 00000030 20 00 2d 00 56 00 21 00 40 00 28 00
+     * 29 00 09 00 00000040 0a 00 0d 00 61 00 62 00 63 00      *
+     * ============= UTF-16BE ==================
+     *
+     * 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
+     * --------------------------------------------------------------------------
+     * 00000000 00 61 00 62 00 63 00 31 00 32 00 33 00 61 00 62 00000010 00 63
+     * 00 31 00 32 00 33 00 41 00 42 00 43 00 30 00000020 00 39 00 38 00 2d 00
+     * 3d 00 20 00 20 00 25 00 5e 00000030 00 20 00 2d 00 56 00 21 00 40 00 28
+     * 00 29 00 09 00000040 00 0a 00 0d 00 61 00 62 00 63      *
+     * @throws SysUtilsException
+     * @throws UnsupportedEncodingException
+     */
     @Test
     public void testWriteReadBinaryFile() throws SysUtilsException, UnsupportedEncodingException {
         // ARRANGE 
@@ -324,7 +354,7 @@ public class TestSysUtils {
             SysUtils.displayHexDump(expectData);
             System.out.println("ACTUAL");
             SysUtils.displayHexDump(actualData);
-        } 
+        }
         assertArrayEquals(expectData, actualData);
 
         if (!Arrays.equals(expectData2, actualData2)) {
@@ -334,7 +364,7 @@ public class TestSysUtils {
             SysUtils.displayHexDump(actualData2);
         }
         assertArrayEquals(expectData2, actualData2);
-        
+
         if (!Arrays.equals(expectData3, actualData3)) {
             System.out.println("EXPECT");
             SysUtils.displayHexDump(expectData3);
@@ -343,13 +373,14 @@ public class TestSysUtils {
         }
         assertArrayEquals(expectData3, actualData3);
 
-        System.out.println("============= UTF-8 =====================");
-        SysUtils.displayHexDump(expectData);
-        System.out.println("============= UTF-16LE ==================");
-        SysUtils.displayHexDump(expectData2);
-        System.out.println("============= UTF-16BE ==================");
-        SysUtils.displayHexDump(expectData3);
-
+        if (false) {
+            System.out.println("============= UTF-8 =====================");
+            SysUtils.displayHexDump(expectData);
+            System.out.println("============= UTF-16LE ==================");
+            SysUtils.displayHexDump(expectData2);
+            System.out.println("============= UTF-16BE ==================");
+            SysUtils.displayHexDump(expectData3);
+        }
         // Cleanup
         // Remove the tmp file tree.
         SysUtils.rmDirTree(SysUtils.getDirName(filename));
