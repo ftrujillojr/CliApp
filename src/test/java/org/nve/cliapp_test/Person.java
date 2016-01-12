@@ -11,29 +11,27 @@ import java.util.List;
 import java.util.Objects;
 import org.nve.cliapp.JsonUtilsException;
 
-/*
- * SVN information
- * $Revision:$
- * $Author:$
- * $Date:$
- * $HeadURL:$
- *
- */
+// Serializability of a class is enabled by the class implementing the java.io.Serializable interface. 
+        
 public class Person implements Serializable {
-
+    // serialVersionUID, which is used during deserialization to verify that the sender 
+    // and receiver of a serialized object have loaded classes for that object that are 
+    // compatible with respect to serialization
+    private static final long serialVersionUID = 01L;  
+    
     private String firstName;
     private String lastName;
     private int age;
     private double salary;
     private boolean isStudent;
 
-    public Person() {
+    public Person() { // A no-arg constructor is needed if class is serializable.
         super();
-        firstName = null;
-        lastName = "";
-        age = -1;
-        salary = 0.0;
-        isStudent = false;
+        this.firstName = null;
+        this.lastName = "";
+        this.age = -1;
+        this.salary = 0.0;
+        this.isStudent = false;
     }
 
     public Person(String firstName, String lastName, int age, double salary, boolean isStudent) {
@@ -47,6 +45,11 @@ public class Person implements Serializable {
 
     // http://javarevisited.blogspot.sg/2011/10/override-hashcode-in-java-example.html
     // http://martinaharris.com/2009/10/testing-java-equals-and-hashcode-methods-essential/
+    //
+    // 1) Write class, implement Serializable
+    // 2) Add attributes and serialVersionUID
+    // 3) ALT+INSERT  Generate Setters/Getters
+    // 4) ALT+INSERT  Generate hashCode/equals
     
     @Override
     public int hashCode() {
@@ -86,6 +89,13 @@ public class Person implements Serializable {
         return true;
     }
     
+    /**
+     * Showing how to deserialize fromJson.   see PersonDeserializer.java
+     * 
+     * @param jsonResults
+     * @return
+     * @throws JsonUtilsException 
+     */
     public static List<Person> fromJson(String jsonResults) throws JsonUtilsException {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.serializeNulls();
@@ -95,6 +105,7 @@ public class Person implements Serializable {
                 new PersonDeserializer());
 
         // more Deserializers here if Person contains other objects.
+        
         Gson gson = gsonBuilder.create();
         Type collectionType = new TypeToken<ArrayList<Person>>() {
         }.getType();
