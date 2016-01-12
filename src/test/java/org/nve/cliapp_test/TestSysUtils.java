@@ -139,7 +139,7 @@ public class TestSysUtils {
     @Test
     public void test_ffind() throws IOException, SysUtilsException {
         // ARRANGE
-        Path tmpPath = Paths.get(SysUtils.getTmpDir(), "testListDir");
+        Path tmpPath = Paths.get(SysUtils.getTmpDir(), "test_ffind");
         List<String> fileList = new ArrayList<>();
         fileList.add(Paths.get(tmpPath.toString(), "top.txt").toString());
         fileList.add(Paths.get(tmpPath.toString(), "SHOULD_NOT_SEE.doc").toString());
@@ -149,6 +149,7 @@ public class TestSysUtils {
         fileList.add(Paths.get(tmpPath.toString(), "sub1", "sub2", "mickey_mouse.png").toString());
         fileList.add(Paths.get(tmpPath.toString(), "sub1", "sub2", "SHOULD_NOT_SEE.xls").toString());
 
+        // create a whole bunch of files in different known directories.
         int expectedCount = 0;
         Iterator<String> itr = fileList.iterator();
         while (itr.hasNext()) {
@@ -188,19 +189,24 @@ public class TestSysUtils {
     @Test
     public void test_mkdir_p() throws SysUtilsException {
         // ARRANGE
-        SysUtils.rmDirTree("/tmp/test");
+        Path tmpPath = Paths.get(SysUtils.getTmpDir(), "test_mkdir_p");
+        SysUtils.rmDirTree(tmpPath.toString());
+        
+        // check to see if directory got removed.
+        File fileObj = new File(tmpPath.toString());
+        boolean dirShouldNotExist = fileObj.exists();
+        assertFalse(dirShouldNotExist);
+        
+        String newDir = Paths.get(SysUtils.getTmpDir(), "test_mkdir_p", "sysutils").toString();
 
         // ACT
-        boolean dirCreated = SysUtils.mkdir_p("/tmp/test/sysutils");
+        boolean dirCreated = SysUtils.mkdir_p(newDir);
 
         // ASSERT
         assertTrue(dirCreated);
 
         // Cleanup
-        SysUtils.rmDirTree("/tmp/test");
-        File fileObj = new File("/tmp/test");
-        boolean dirShouldNotExist = fileObj.exists();
-        assertFalse(dirShouldNotExist);
+        SysUtils.rmDirTree(tmpPath.toString());
     }
 
     @Test
