@@ -6,12 +6,18 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
@@ -635,16 +641,16 @@ public final class SysUtils {
     }
 
     /**
-     * This is a convenience method to help with the stream resource nightmare AND
-     * using a BufferedInputStream to maximize reads from a file.
-     * 
+     * This is a convenience method to help with the stream resource nightmare
+     * AND using a ByteArrayOutputStream to capture all bytes and then return byte[].
+     *
      * @param filename
      * @return
-     * @throws SysUtilsException 
+     * @throws SysUtilsException
      */
     public static byte[] readBinaryFile(String filename) throws SysUtilsException {
-        // I am using StringBuilder to store up all bytes and then return byte[].
-        StringBuilder sb = new StringBuilder();
+        // This will allow you to read in ALL bytes into baos.
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         // try(with resources)    will close DataInputStream and all of its derived streams.
         try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(new File(filename)), SysUtils.binaryBufferSize))) {
@@ -653,8 +659,8 @@ public final class SysUtils {
             int bytesRead;
 
             while ((bytesRead = dis.read(contents)) != -1) {
-                strFileContents = new String(contents, 0, bytesRead);
-                sb.append(strFileContents);
+                //SysUtils.displayHexDump(contents);
+                baos.write(contents, 0, bytesRead); // keep writing here.
             }
         } catch (IOException ex) {
             String msg = "ERROR: IOException " + SysUtils.class.getName() + "(" + filename + ")\n";
@@ -662,16 +668,16 @@ public final class SysUtils {
             throw new SysUtilsException(msg);
         }
 
-        return sb.toString().getBytes();
+        return baos.toByteArray(); // Dump the stream when done.
     }
 
     /**
      * Write byte[] to filename with option to append data.
-     * 
+     *
      * @param filename
      * @param byteData
      * @param append
-     * @throws SysUtilsException 
+     * @throws SysUtilsException
      */
     public static void writeBinaryFile(String filename, byte[] byteData, boolean append) throws SysUtilsException {
         // Ensure the directory is created for filename.
@@ -722,7 +728,7 @@ public final class SysUtils {
      * Convenience overloaded method.
      *
      * encoding can be => ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
-     * 
+     *
      * @param filename
      * @param listStrings
      * @param encoding
@@ -736,7 +742,7 @@ public final class SysUtils {
      * Convenience overloaded method.
      *
      * encoding can be => ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
-     * 
+     *
      * @param filename
      * @param listStrings
      * @param encoding
@@ -761,7 +767,7 @@ public final class SysUtils {
         // Ensure the directory is created for filename.
         String dirname = SysUtils.getDirName(filename);
         SysUtils.mkdir_p(dirname);
-        
+
         // Try with resources will close the Buffered Writer in all events.  Java 1.7+
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(filename), appendToFile), encoding))) {
             for (int ii = 0; ii < listStrings.size(); ii++) {
@@ -775,44 +781,94 @@ public final class SysUtils {
             throw new SysUtilsException(msg);
         }
     }
-    
+
     /**
-     * Does not require external libraries.  Only base Java.
-     * 
+     * Returns a string repeated n times.
+     *
      * @param str
      * @param n
-     * @return 
+     * @return
      */
     public static String repeatString(String str, int n) {
-        return (new String(new char[n]).replace("\0", str));
+        StringBuilder sb = new StringBuilder();
+        for (int ii = 0; ii < n; ii++) {
+            sb.append(str);
+        }
+        return (sb.toString());
     }
-    
-    
+
     /**
      * Simple display byte[] as hex table.
-     * 
-     * @param byteArray 
+     *
+     * @param byteArray
      */
     public static void displayHexDump(byte[] byteArray) {
         String dash = "-";
-        
+
         System.out.print(String.format("\n%8s  ", " "));
-        for(int ii = 0; ii < 16; ii++) {
+        for (int ii = 0; ii < 16; ii++) {
             System.out.print(String.format(" %02x ", ii));
         }
         System.out.println("");
-        System.out.print(repeatString(dash, 10+(16*4)));
-        
-        for(int ii = 0; ii < byteArray.length; ii++) {
-            if((ii%16) == 0) {
+        System.out.print(repeatString(dash, 10 + (16 * 4)));
+
+        for (int ii = 0; ii < byteArray.length; ii++) {
+            if ((ii % 16) == 0) {
                 System.out.println();
                 System.out.print(String.format("%08x  ", ii));
             }
-            
-            System.out.print(String.format(" %02x ", byteArray[ii]));            
+
+            System.out.print(String.format(" %02x ", byteArray[ii]));
         }
-        
+
         System.out.println("\n");
     }
 
+    /**
+     * Requires a SERIALIZABLE object as input.
+     *
+     * @param <T>
+     * @param obj
+     * @return
+     * @throws java.io.IOException
+     */
+    public static <T> byte[] objectToByteArray(T obj) throws IOException {
+        byte[] byteArray;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
+        // try with resources will autoclose ObjectOutput
+        try (ObjectOutput out = new ObjectOutputStream(bos)) {
+            out.writeObject(obj);
+            out.flush();
+            byteArray = bos.toByteArray();
+            bos.close();
+        } 
+        
+        return byteArray;
+    }
+    
+    
+    /**
+     * This method assumes you used objectToByteArray() to create byte[]
+     * 
+     * @param <T>
+     * @param byteArray
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException 
+     */
+    public static <T> T byteArrayToObject(byte[] byteArray) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream bis = new ByteArrayInputStream(byteArray);
+        T obj;
+        
+        // try with resources will autoclose ObjectInput
+        try (ObjectInput in = new ObjectInputStream(bis)) {
+            obj = (T)in.readObject();
+            bis.close();
+        } 
+        
+        return obj;
+    }
+
+    
 }

@@ -125,6 +125,10 @@ public class JsonUtils {
      * @throws JsonUtilsException
      */
     public static void writeJsonToFile(String jsonStr, String fileName) throws JsonUtilsException {
+        // Ensure the directory is created for fileName.
+        String dirname = SysUtils.getDirName(fileName);
+        SysUtils.mkdir_p(dirname);        
+        
         // write JSON String to file
         File file = new File(fileName);
         try {

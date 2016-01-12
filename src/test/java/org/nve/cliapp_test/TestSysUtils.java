@@ -301,14 +301,13 @@ public class TestSysUtils {
     /**
      * This is an example of 3 different types of binary data.
      *
-     * *** You have to convert using String.getBytes(encodingString) ***
-     *     * 
-============= UTF-8 =====================
+     * *** You have to convert using String.getBytes(encodingString) *** *
+     * ============= UTF-8 =====================
      *
      * 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
      * --------------------------------------------------------------------------
      * 00000000 61 62 63 31 32 33 61 62 63 31 32 33 41 42 43 30 00000010 39 38
-     * 2d 3d 20 20 25 5e 20 2d 56 21 40 28 29 09 00000020 0a 0d 61 62 63      *
+     * 2d 3d 20 20 25 5e 20 2d 56 21 40 28 29 09 00000020 0a 0d 61 62 63 *
      * ============= UTF-16LE ==================
      *
      * 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
@@ -316,15 +315,17 @@ public class TestSysUtils {
      * 00000000 61 00 62 00 63 00 31 00 32 00 33 00 61 00 62 00 00000010 63 00
      * 31 00 32 00 33 00 41 00 42 00 43 00 30 00 00000020 39 00 38 00 2d 00 3d
      * 00 20 00 20 00 25 00 5e 00 00000030 20 00 2d 00 56 00 21 00 40 00 28 00
-     * 29 00 09 00 00000040 0a 00 0d 00 61 00 62 00 63 00      *
-     * ============= UTF-16BE ==================
+     * 29 00 09 00 00000040 0a 00 0d 00 61 00 62 00 63 00 * =============
+     * UTF-16BE ==================
      *
      * 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
      * --------------------------------------------------------------------------
      * 00000000 00 61 00 62 00 63 00 31 00 32 00 33 00 61 00 62 00000010 00 63
      * 00 31 00 32 00 33 00 41 00 42 00 43 00 30 00000020 00 39 00 38 00 2d 00
      * 3d 00 20 00 20 00 25 00 5e 00000030 00 20 00 2d 00 56 00 21 00 40 00 28
-     * 00 29 00 09 00000040 00 0a 00 0d 00 61 00 62 00 63      *
+     * 00 29 00 09 00000040 00 0a 00 0d 00 61 00 62 00 63
+     *
+     *
      * @throws SysUtilsException
      * @throws UnsupportedEncodingException
      */
@@ -381,6 +382,69 @@ public class TestSysUtils {
             System.out.println("============= UTF-16BE ==================");
             SysUtils.displayHexDump(expectData3);
         }
+        // Cleanup
+        // Remove the tmp file tree.
+        SysUtils.rmDirTree(SysUtils.getDirName(filename));
+    }
+
+    @Test
+    public void testRepeatString() {
+        String expect = "HelloHelloHello";
+        String actual = SysUtils.repeatString("Hello", 3);
+        assertEquals(expect, actual);
+    }
+
+    @Test
+    public void testObjectToByteArray() throws IOException, ClassNotFoundException, SysUtilsException {
+        // ARRANGE
+        String filename = Paths.get(SysUtils.getTmpDir(), "testObjectToByteArray", "file.bin").toString();
+        Person person = new Person("Francis", "Trujillo", 51, 8.00, false);
+
+        // ACT - object to byte[] and back to object
+        byte[] expectData = SysUtils.objectToByteArray(person);
+        Person restoredPerson = SysUtils.byteArrayToObject(expectData);
+
+        if (person.equals(restoredPerson) == false) {
+            System.out.println(person.toString());
+            System.out.println(restoredPerson.toString());
+        }
+
+        // ASSERT 
+        assertEquals(person, restoredPerson);
+
+        // ACT - write/read to and from file
+        SysUtils.writeBinaryFile(filename, expectData, false);
+        byte[] actualData = SysUtils.readBinaryFile(filename);
+
+        // ASSERT
+        if (Arrays.equals(expectData, actualData) == false) {
+            SysUtils.displayHexDump(expectData);
+            SysUtils.displayHexDump(actualData);
+        }
+        assertArrayEquals(expectData, actualData);
+
+        // Cleanup
+        // Remove the tmp file tree.
+        SysUtils.rmDirTree(SysUtils.getDirName(filename));
+    }
+
+    @Test
+    public void testSimpleBinaryWriteRead() throws SysUtilsException {
+        // ARRANGE
+        String filename = Paths.get(SysUtils.getTmpDir(), "testSimpleBinaryWriteRead", "file.bin").toString();
+        byte[] expectData = {(byte) 0x12, (byte) 0x34, (byte) 0x56, (byte) 0x78, (byte) 0x9a, (byte) 0xbc, (byte) 0xde, (byte) 0xf0};
+
+        // ACT
+        SysUtils.writeBinaryFile(filename, expectData, false);
+        byte[] actualData = SysUtils.readBinaryFile(filename);
+
+        // ASSERT
+        if (Arrays.equals(expectData, actualData) == false) {
+            SysUtils.displayHexDump(expectData);
+            SysUtils.displayHexDump(actualData);
+        }
+        assertArrayEquals(expectData, actualData);
+
         // Cleanup
         // Remove the tmp file tree.
         SysUtils.rmDirTree(SysUtils.getDirName(filename));

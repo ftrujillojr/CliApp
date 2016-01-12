@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,7 @@ import org.nve.cliapp.JsonUtilsException;
  * $HeadURL:$
  *
  */
-public class Person {
+public class Person implements Serializable {
 
     private String firstName;
     private String lastName;
@@ -27,6 +28,7 @@ public class Person {
     private boolean isStudent;
 
     public Person() {
+        super();
         firstName = null;
         lastName = "";
         age = -1;
@@ -35,6 +37,7 @@ public class Person {
     }
 
     public Person(String firstName, String lastName, int age, double salary, boolean isStudent) {
+        super();
         this.firstName = firstName;
         this.lastName = lastName;
         this.age = age;
@@ -82,8 +85,6 @@ public class Person {
         }
         return true;
     }
-
-    
     
     public static List<Person> fromJson(String jsonResults) throws JsonUtilsException {
         GsonBuilder gsonBuilder = new GsonBuilder();

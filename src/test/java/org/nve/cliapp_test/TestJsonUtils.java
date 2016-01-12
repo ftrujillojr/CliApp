@@ -1,5 +1,6 @@
 package org.nve.cliapp_test;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.AfterClass;
@@ -11,6 +12,7 @@ import org.junit.Test;
 import org.nve.cliapp.JsonUtils;
 import org.nve.cliapp.JsonUtilsException;
 import org.nve.cliapp.SysUtils;
+import org.nve.cliapp.SysUtilsException;
 
 /*   ARRANGE    ACT    ASSERT
 
@@ -94,8 +96,6 @@ public class TestJsonUtils {
      */
     @BeforeClass
     public static void setUpClass() {
-        tmpDir = SysUtils.getTmpDir();
-        
         personList.add(new Person("Wiley", "Coyote", 80, 1.10, false));
         personList.add(new Person("Road", "Runner", 81, 100.23, false));
         personList.add(new Person("Bugs", "Bunny", 100, 5436.34, true));
@@ -130,27 +130,35 @@ public class TestJsonUtils {
     }
 
     @Test
-    public void testReadWriteJsonToFile_Compact() throws JsonUtilsException {
+    public void testReadWriteJsonToFile_Compact() throws JsonUtilsException, SysUtilsException {
         // ARRANGE 
+        String filename = Paths.get(SysUtils.getTmpDir(), "testReadWriteJsonToFile_Compact", "compact.json").toString();
         String personJsonCompact = JsonUtils.objectToJsonCompact(personList);
         String readCompactExpect = JsonUtils.readJsonFromFile("./src/test/resources/compact.json");
         // ACT
-        JsonUtils.writeJsonToFile(personJsonCompact, tmpDir + "/compact.json");
-        String readCompactActual = JsonUtils.readJsonFromFile(tmpDir + "/compact.json");
+        JsonUtils.writeJsonToFile(personJsonCompact, filename);
+        String readCompactActual = JsonUtils.readJsonFromFile(filename);
         // ASSERT
         assertEquals(readCompactExpect, readCompactActual);
+        // Cleanup
+        // Remove the tmp file tree.
+        SysUtils.rmDirTree(SysUtils.getDirName(filename));    
     }
     
     @Test
-    public void testReadWriteJsonToFile_Pretty() throws JsonUtilsException {
+    public void testReadWriteJsonToFile_Pretty() throws JsonUtilsException, SysUtilsException {
         // ARRANGE 
+        String filename = Paths.get(SysUtils.getTmpDir(), "testReadWriteJsonToFile_Pretty", "pretty.json").toString();
         String personJsonPretty = JsonUtils.objectToJsonPretty(personList);
         String readPrettyExpect = JsonUtils.readJsonFromFile("./src/test/resources/pretty.json");
         // ACT
-        JsonUtils.writeJsonToFile(personJsonPretty, tmpDir + "/pretty.json");
-        String readPrettyActual = JsonUtils.readJsonFromFile(tmpDir + "/pretty.json");
+        JsonUtils.writeJsonToFile(personJsonPretty, filename);
+        String readPrettyActual = JsonUtils.readJsonFromFile(filename);
         // ASSERT
         assertEquals(readPrettyExpect, readPrettyActual);
+        // Cleanup
+        // Remove the tmp file tree.
+        SysUtils.rmDirTree(SysUtils.getDirName(filename));    
     }
 
     @Test
