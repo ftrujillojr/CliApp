@@ -12,8 +12,14 @@ import java.util.Objects;
 import org.nve.cliapp.JsonUtilsException;
 
 // Serializability of a class is enabled by the class implementing the java.io.Serializable interface. 
-        
-public class Person implements Serializable {
+
+// Comparable interface is used when you want to compare the object to another of same class.
+// abstract method  compareTo(Object obj) is the logic.  This method MUST be in this class.
+//
+// Objects which implement Comparable in java can be used as keys in a SortedMap like 
+// TreeMap or SortedSet like TreeSet without implementing any other interface.
+
+public class Person implements Serializable, Comparable<Person> {
     // serialVersionUID, which is used during deserialization to verify that the sender 
     // and receiver of a serialized object have loaded classes for that object that are 
     // compatible with respect to serialization
@@ -134,6 +140,18 @@ public class Person implements Serializable {
 
         return (sb.toString());
     }
+    
+    public String toString2() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(String.format("%10s ", this.firstName));
+        sb.append(String.format("%10s ", this.lastName));
+        sb.append(String.format("%10s ", this.age));
+        sb.append(String.format("%10s ", this.salary));
+        sb.append(String.format("%10s", this.isStudent));
+
+        return (sb.toString());
+    }
 
     public String getFirstName() {
         return firstName;
@@ -173,5 +191,36 @@ public class Person implements Serializable {
 
     public void setIsStudent(boolean isStudent) {
         this.isStudent = isStudent;
+    }
+
+    /**
+     * Sorting in this example will be done first off of
+     *    lastName
+     *    salary
+     *    age
+     *    isStudent
+     * 
+     * Calling method     Collections.sort(List)
+     * 
+     * @param obj
+     * @return 
+     */
+    @Override
+    public int compareTo(Person obj) {
+        int comp;
+        
+        // for String(s) use compareTo to return -1,0,1
+        comp = this.lastName.compareTo(obj.lastName); // ASCENDING
+        
+        if(comp == 0) {
+            comp = Double.compare(obj.salary, this.salary);  // DESCENDING
+            if(comp == 0) {
+                comp = Integer.compare(this.age, obj.age); // ASCENDING
+                if(comp == 0) 
+                    comp = Boolean.compare(this.isStudent, obj.isStudent); // ASCENDING
+            }
+        }
+        
+        return(comp);
     }
 }
