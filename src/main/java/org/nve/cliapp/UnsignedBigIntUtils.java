@@ -13,7 +13,7 @@ public class UnsignedBigIntUtils {
      * method that sets the unsigned bit. There is no class named Unsigned
      * BigInteger.
      *
-     * @param data
+     * @param data A BigInteger that we will set unsigned bit on.
      * @return Unsigned BigInteger
      */
     public static BigInteger toBI(BigInteger data) {
@@ -25,7 +25,7 @@ public class UnsignedBigIntUtils {
      * Convert byte[] to Unsigned BigInteger. There is no class named Unsigned
      * BigInteger.
      *
-     * @param byteArray
+     * @param byteArray data input
      * @return Unsigned BigInteger
      */
     public static BigInteger toBI(byte[] byteArray) {
@@ -37,9 +37,9 @@ public class UnsignedBigIntUtils {
      * Convert a hex string to Unsigned BigInteger. There is no class named
      * Unsigned BigInteger.
      *
-     * @param hexStr
-     * @return
-     * @throws UnsignedBigIntUtilsException
+     * @param hexStr data input
+     * @return Unsigned BigInteger
+     * @throws UnsignedBigIntUtilsException sub method throws
      */
     public static BigInteger toBI(String hexStr) throws UnsignedBigIntUtilsException {
         // The "1" sets unsigned bit.  
@@ -48,6 +48,13 @@ public class UnsignedBigIntUtils {
     }
     
     
+    /**
+     * Binary string in and Big Integer out.
+     * 
+     * @param binStr   Binary string
+     * @return  Big Integer
+     * @throws UnsignedBigIntUtilsException sub method throws
+     */
     public static BigInteger binaryToBI(String binStr) throws UnsignedBigIntUtilsException {
         BigInteger biResult = new BigInteger(UnsignedBigIntUtils.validateBinaryStr(binStr), 2);
         return biResult;
@@ -60,8 +67,8 @@ public class UnsignedBigIntUtils {
      * DatatypeConverter is base Java out of the box. No external libraries
      * required. This method will prepend a 0x in String result.
      *
-     * @param array
-     * @return
+     * @param array byte[] input
+     * @return hex string
      */
     public static String toHexString(byte[] array) {
         StringBuilder sb = new StringBuilder();
@@ -72,8 +79,8 @@ public class UnsignedBigIntUtils {
     /**
      * Converts BigInteger to hex String with prepended 0x.
      *
-     * @param data
-     * @return
+     * @param data BigInteger
+     * @return hex string
      */
     public static String toHexString(BigInteger data) {
         StringBuilder sb = new StringBuilder();
@@ -87,15 +94,24 @@ public class UnsignedBigIntUtils {
      * DatatypeConverter is base Java out of the box. No external libraries
      * required.
      *
-     * @param hexStr
-     * @return
-     * @throws UnsignedBigIntUtilsException
+     * @param hexStr A hex string
+     * @return byte[]
+     * @throws UnsignedBigIntUtilsException sub method throws
      */
     public static byte[] toByteArray(String hexStr) throws UnsignedBigIntUtilsException {
         return DatatypeConverter.parseHexBinary(UnsignedBigIntUtils.validateHexStr(hexStr));
     }
 
     // ================================================================================================================================
+    
+    /**
+     * 
+     * @param data  Given this BigInteger, mask off consecutive bits
+     * @param msb   ending with msb
+     * @param lsb   and starting with lsb.
+     * @return  BigInteger
+     */
+    
     public static BigInteger maskBitRange(BigInteger data, int msb, int lsb) {
         BigInteger mask = toBI(BigInteger.valueOf(0x0L));
         for (int i = lsb; i <= msb; i++) {
@@ -106,12 +122,12 @@ public class UnsignedBigIntUtils {
 
     // ================================================================================================================================
     /**
-     * Convert BigInteger to hex String with zero padded to numBits if >
+     * Convert BigInteger to hex String with zero padded to numBits if &gt;
      * hexStr.length
      *
-     * @param data
-     * @param numBits
-     * @return
+     * @param data  BigInteger
+     * @param numBits number of bits to pad zeros for output
+     * @return  hex string padded with zeros
      */
     public static String toPaddedHexString(BigInteger data, int numBits) {
         String hexStr = UnsignedBigIntUtils.toHexString(data);
@@ -141,9 +157,9 @@ public class UnsignedBigIntUtils {
      * Convert BigInteger to hex String that is formated every 4 hex characters
      * for easier reading.
      *
-     * @param data
-     * @param numBits
-     * @return
+     * @param data  BigInteger
+     * @param numBits num bits to to pad zeros.
+     * @return zero padded hex string broken apart on each 16 bit word and every 16 bits.
      */
     public static String toFormattedHexString(BigInteger data, int numBits) {
         //BigInteger.toString(radix) does not pad to full word sizes.
@@ -173,9 +189,9 @@ public class UnsignedBigIntUtils {
      * This method is used to compress a possible formatted hex String by
      * stripping off leading 0x and removing white space and vertical spacers.
      *
-     * @param hexStr
-     * @return
-     * @throws UnsignedBigIntUtilsException
+     * @param hexStr  The hex string to validate
+     * @return  stripped hex string usable by BigInteger.
+     * @throws UnsignedBigIntUtilsException  If hexStr is invalid, then tell us why.
      */
     private static String validateHexStr(String hexStr) throws UnsignedBigIntUtilsException {
         String tmpStr = RegExp.replaceAll("[ \\|\\t\\n]+", hexStr, "");
@@ -189,12 +205,24 @@ public class UnsignedBigIntUtils {
     
     // ==========================================================================================
 
+    /**
+     * BigInteger to binary string.
+     * @param data  BigInteger
+     * @return  binary String
+     */
     public static String toBinaryString(BigInteger data) {
         StringBuilder sb = new StringBuilder();
         sb.append("0b").append(data.toString(2));
         return sb.toString();
     }
 
+    /**
+     * BigInteger to binary string padded with zeros.
+     * 
+     * @param data  BigInteger
+     * @param numBits  numbits to pad zeros for.
+     * @return   binary String padded with zeros.
+     */
     public static String toPaddedBinaryString(BigInteger data, int numBits) {
         String binStr = UnsignedBigIntUtils.toBinaryString(data);
         binStr = RegExp.replaceFirst("0b", binStr, "");
@@ -212,7 +240,13 @@ public class UnsignedBigIntUtils {
         sb.append(binStr);
         return (sb.toString());
     }
-    
+
+    /**
+     * BigInteger to binary String padding zeros wvery numBits and breaking output up by words.
+     * @param data  BigInteger
+     * @param numBits numbits to pad zeroes for 
+     * @return  binary string
+     */
     public static String toFormattedBinaryString(BigInteger data, int numBits) {
         //BigInteger.toString(radix) does not pad to full word sizes.
         String tmpStr = UnsignedBigIntUtils.toPaddedBinaryString(data, numBits);
@@ -244,9 +278,9 @@ public class UnsignedBigIntUtils {
      * This method is used to compress a possible formatted binary String by
      * stripping off leading 0b and removing white space and vertical spacers.
      *
-     * @param binStr
-     * @return
-     * @throws UnsignedBigIntUtilsException
+     * @param binStr Binary String
+     * @return stripped valid binary string
+     * @throws UnsignedBigIntUtilsException   If string is not valid then this is thrown.
      */
     private static String validateBinaryStr(String binStr) throws UnsignedBigIntUtilsException {
         String tmpStr = RegExp.replaceAll("[ \\|\\t\\n]+", binStr, "");

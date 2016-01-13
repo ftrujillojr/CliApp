@@ -91,7 +91,7 @@ public final class SysUtils {
      * This is for my jUnit tests, but I could it elsewhere. (I did not write a
      * unit test for this method)
      *
-     * @return
+     * @return String containing tmp directory for Windows/Linux.
      */
     public static String getTmpDir() {
         if (SysUtils.isWindows()) {
@@ -146,7 +146,7 @@ public final class SysUtils {
     }
 
     /**
-     * Input => /home/ftrujillo/filename.txt Output => filename.ext
+     * Input =&gt; /home/ftrujillo/filename.txt Output =&gt; filename.ext
      *
      * (I did not write a unit test for this method)
      *
@@ -160,7 +160,7 @@ public final class SysUtils {
     }
 
     /**
-     * Input => /home/ftrujillo/filename.txt Output => /home/ftrujillo
+     * Input =&gt; /home/ftrujillo/filename.txt Output =&gt; /home/ftrujillo
      *
      * (I did not write a unit test for this method)
      *
@@ -179,7 +179,7 @@ public final class SysUtils {
      * (I did not write a unit test for this method)
      *
      * @param filename A string
-     * @throws org.nve.cliapp.SysUtilsException
+     * @throws org.nve.cliapp.SysUtilsException   Captures IOException
      */
     public static void rmFile(String filename) throws SysUtilsException {
         try {
@@ -196,8 +196,8 @@ public final class SysUtils {
      *
      * (I did not write a unit test for this method)
      *
-     * @param dirname
-     * @throws org.nve.cliapp.SysUtilsException
+     * @param dirname  Directory name
+     * @throws org.nve.cliapp.SysUtilsException  Captures many exceptions.
      */
     public static void rmDir(String dirname) throws SysUtilsException {
         try {
@@ -222,8 +222,8 @@ public final class SysUtils {
      *
      * (tested in test_mkdir_p())
      *
-     * @param dirname
-     * @throws org.nve.cliapp.SysUtilsException
+     * @param dirname  A directory name
+     * @throws org.nve.cliapp.SysUtilsException  sub classes throw exceptions.
      */
     public static void rmDirTree(String dirname) throws SysUtilsException {
         File fileObj = new File(dirname);
@@ -281,9 +281,9 @@ public final class SysUtils {
      *
      * Currently, method only works for Linux (CSH) and Windows (CMD) shells.
      *
-     * @param command
+     * @param command  A linux or windows command depending where you are using this method.
      * @return List&lt;String&gt; There are no new lines in output.
-     * @throws SysUtilsException
+     * @throws SysUtilsException Captures IOException.
      */
     public static List<String> system(String command) throws SysUtilsException {
         String[] linuxCmd = {"/bin/csh", "-c", command};
@@ -453,10 +453,10 @@ public final class SysUtils {
     /**
      * Recursively find all files in startPath that match regexp fileRegEx.
      *
-     * @param startPath
-     * @param fileRegEx
-     * @return
-     * @throws IOException
+     * @param startPath  Where do we start
+     * @param fileRegEx  What are we looking for
+     * @return Map&lt;String, BasicFileAttributes&gt;
+     * @throws IOException Files.walkFileTree() might throw this.  
      */
     public static Map<String, BasicFileAttributes> ffind(Path startPath, String fileRegEx) throws IOException {
         return (SysUtils.ffind(startPath, fileRegEx, MAX_VALUE));
@@ -466,11 +466,11 @@ public final class SysUtils {
      * Recursively find all files in startPath that match regexp fileRegEx with
      * max depth.
      *
-     * @param startPath
-     * @param fileRegEx
-     * @param maxDepth
-     * @return
-     * @throws IOException
+     * @param startPath  Where do we start
+     * @param fileRegEx  What are we looking for
+     * @param maxDepth  How deep
+     * @return Map&lt;String, BasicFileAttributes&gt;
+     * @throws IOException Files.walkFileTree() might throw this.  
      */
     public static Map<String, BasicFileAttributes> ffind(Path startPath, String fileRegEx, int maxDepth) throws IOException {
         // These two maps are just temporary collections while I walk the tree.
@@ -501,8 +501,8 @@ public final class SysUtils {
     /**
      * Display a List&lt;T&gt; to stdout.
      *
-     * @param <T>
-     * @param list
+     * @param <T>  Generic type
+     * @param list List instance
      */
     public static <T> void displayList(List<T> list) {
         Iterator<T> itr = list.iterator();
@@ -515,8 +515,8 @@ public final class SysUtils {
     /**
      * Display a Set&lt;T&gt; to stdout.
      *
-     * @param <T>
-     * @param set
+     * @param <T> Generic Type
+     * @param set Set instance
      */
     public static <T> void displaySet(Set<T> set) {
         Iterator<T> itr = set.iterator();
@@ -526,6 +526,11 @@ public final class SysUtils {
         }
     }
 
+    /**
+     * This is the return type from ffind() method.
+     * 
+     * @param map   Map&lt;String, BasicFileAttributes&gt;
+     */
     public static void displayFileMap(Map<String, BasicFileAttributes> map) {
         Iterator<String> itr = map.keySet().iterator();
         while (itr.hasNext()) {
@@ -579,10 +584,10 @@ public final class SysUtils {
      *
      * ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
      *
-     * @param filename
-     * @param encoding
-     * @return
-     * @throws org.nve.cliapp.SysUtilsException
+     * @param filename  Filename to read from 
+     * @param encoding  What char encoding
+     * @return  A BufferedReader instance.
+     * @throws org.nve.cliapp.SysUtilsException  Captures FileNotFoundException and UnsupportedEncodingException
      */
     public static BufferedReader getBufferedReaderInstance(String filename, String encoding) throws SysUtilsException {
         BufferedReader br = null;
@@ -613,11 +618,11 @@ public final class SysUtils {
      *
      * ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
      *
-     * @param filename
-     * @param encoding
-     * @param appendToFile
-     * @return
-     * @throws org.nve.cliapp.SysUtilsException
+     * @param filename Filename to create or append to.
+     * @param encoding What type of char encoding to use.
+     * @param appendToFile boolean   true == append
+     * @return BufferedWriter
+     * @throws org.nve.cliapp.SysUtilsException  Captures FileNotFoundException and UnsupportedEncodingException
      */
     public static BufferedWriter getBufferedWriterInstance(String filename, String encoding, boolean appendToFile) throws SysUtilsException {
         BufferedWriter bw = null;
@@ -644,9 +649,9 @@ public final class SysUtils {
      * This is a convenience method to help with the stream resource nightmare
      * AND using a ByteArrayOutputStream to capture all bytes and then return byte[].
      *
-     * @param filename
-     * @return
-     * @throws SysUtilsException
+     * @param filename  Filename to read
+     * @return byte[]
+     * @throws SysUtilsException  Captures IOException
      */
     public static byte[] readBinaryFile(String filename) throws SysUtilsException {
         // This will allow you to read in ALL bytes into baos.
@@ -674,10 +679,10 @@ public final class SysUtils {
     /**
      * Write byte[] to filename with option to append data.
      *
-     * @param filename
-     * @param byteData
-     * @param append
-     * @throws SysUtilsException
+     * @param filename  Filename to write or append to.
+     * @param byteData  byte[] data to write
+     * @param append  true == append
+     * @throws SysUtilsException  Captures IOException.
      */
     public static void writeBinaryFile(String filename, byte[] byteData, boolean append) throws SysUtilsException {
         // Ensure the directory is created for filename.
@@ -699,12 +704,12 @@ public final class SysUtils {
      * Open and read a text file using specified encoding, and return the lines
      * in the file as a list of Strings.
      *
-     * encoding can be => ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
+     * encoding can be =&gt; ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
      *
-     * @param filename
-     * @param encoding
+     * @param filename  Filename to read.
+     * @param encoding  Character encoding to use.
      * @return List&lt;String&gt;
-     * @throws org.nve.cliapp.SysUtilsException
+     * @throws org.nve.cliapp.SysUtilsException  Captures IOException.
      */
     public static List<String> readTextFile(String filename, String encoding) throws SysUtilsException {
         List<String> records = new ArrayList<>();
@@ -727,12 +732,12 @@ public final class SysUtils {
     /**
      * Convenience overloaded method.
      *
-     * encoding can be => ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
+     * encoding can be =&gt; ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
      *
-     * @param filename
-     * @param listStrings
-     * @param encoding
-     * @throws SysUtilsException
+     * @param filename  Filename to write 
+     * @param listStrings  List of Strings to use as data input.
+     * @param encoding Type of encoding to use on write.
+     * @throws SysUtilsException  sub class throws this exception.
      */
     public static void writeTextFile(String filename, List<String> listStrings, String encoding) throws SysUtilsException {
         SysUtils.writeTextFile(filename, listStrings, encoding, false);
@@ -741,12 +746,12 @@ public final class SysUtils {
     /**
      * Convenience overloaded method.
      *
-     * encoding can be => ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
+     * encoding can be =&gt; ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
      *
-     * @param filename
-     * @param listStrings
-     * @param encoding
-     * @throws SysUtilsException
+     * @param filename  Filename to append to.
+     * @param listStrings List of Strings to use as data input.
+     * @param encoding Type of encoding to use on append.
+     * @throws SysUtilsException  Captures IOException.
      */
     public static void appendTextFile(String filename, List<String> listStrings, String encoding) throws SysUtilsException {
         SysUtils.writeTextFile(filename, listStrings, encoding, true);
@@ -755,13 +760,13 @@ public final class SysUtils {
     /**
      * Write List of Strings to an encoded text file.
      *
-     * encoding can be => ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
+     * encoding can be =&gt; ISO-8859-1 US-ASCII UTF-16 UTF-16BE UTF-16LE UTF-8
      *
-     * @param filename
-     * @param listStrings
-     * @param encoding
-     * @param appendToFile
-     * @throws org.nve.cliapp.SysUtilsException
+     * @param filename  Filename to write/append to.
+     * @param listStrings List of Strings as data input.
+     * @param encoding Character encoding type.
+     * @param appendToFile true == append
+     * @throws org.nve.cliapp.SysUtilsException  Captures IOException
      */
     public static void writeTextFile(String filename, List<String> listStrings, String encoding, boolean appendToFile) throws SysUtilsException {
         // Ensure the directory is created for filename.
@@ -785,9 +790,9 @@ public final class SysUtils {
     /**
      * Returns a string repeated n times.
      *
-     * @param str
-     * @param n
-     * @return
+     * @param str  String to repeat
+     * @param n   Repeat this many times
+     * @return  New String.
      */
     public static String repeatString(String str, int n) {
         StringBuilder sb = new StringBuilder();
@@ -800,7 +805,7 @@ public final class SysUtils {
     /**
      * Simple display byte[] as hex table.
      *
-     * @param byteArray
+     * @param byteArray  byte[] to display
      */
     public static void displayHexDump(byte[] byteArray) {
         String dash = "-";
@@ -827,10 +832,10 @@ public final class SysUtils {
     /**
      * Requires a SERIALIZABLE object as input.
      *
-     * @param <T>
-     * @param obj
-     * @return
-     * @throws java.io.IOException
+     * @param <T> Generic type
+     * @param obj object instance
+     * @return byte[] from Object
+     * @throws java.io.IOException ByteArrayStream might throw.
      */
     public static <T> byte[] objectToByteArray(T obj) throws IOException {
         byte[] byteArray;
@@ -851,11 +856,11 @@ public final class SysUtils {
     /**
      * This method assumes you used objectToByteArray() to create byte[]
      * 
-     * @param <T>
-     * @param byteArray
-     * @return
-     * @throws IOException
-     * @throws ClassNotFoundException 
+     * @param <T>  Generic type used for RETURN type
+     * @param byteArray  Data input is byte[]
+     * @return  returns Generic type.
+     * @throws IOException  ByteArrayStream might throw.
+     * @throws ClassNotFoundException  Complier might need a cast.
      */
     public static <T> T byteArrayToObject(byte[] byteArray) throws IOException, ClassNotFoundException {
         ByteArrayInputStream bis = new ByteArrayInputStream(byteArray);

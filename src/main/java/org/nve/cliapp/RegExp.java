@@ -26,7 +26,7 @@ public class RegExp {
     /**
      * Split a String on whitespace and return List&lt;String&gt;
      *
-     * @param myString
+     * @param myString String to act upon.
      * @return List&lt;String&gt;
      */
     public static List<String> split(String myString) {
@@ -41,9 +41,9 @@ public class RegExp {
     /**
      * Split a String on regexp and return List&lt;String&gt;
      *
-     * @param myRegEx
-     * @param myString
-     * @return List&lt;String&gt;
+     * @param myRegEx  A regular expression
+     * @param myString String to act upon
+     * @return List&lt;String&gt; 
      */
     public static List<String> split(String myRegEx, String myString) {
         Pattern pattern = Pattern.compile(myRegEx);
@@ -55,9 +55,9 @@ public class RegExp {
     /**
      * Case sensitive regex match.
      *
-     * @param myRegEx
-     * @param myString
-     * @return boolean
+     * @param myRegEx A regular expression
+     * @param myString String to act upon
+     * @return boolean 
      */
     public static boolean isMatch(String myRegEx, String myString) {
         Pattern pattern = Pattern.compile(myRegEx);
@@ -77,9 +77,9 @@ public class RegExp {
      *
      * String re = "(?i:.*this is case insensitive reg ex.*)"; // MUST HAVE ()
      *
-     * @param myRegEx
-     * @param myString
-     * @param patternFlags
+     * @param myRegEx A Regular Expression
+     * @param myString String to act upon
+     * @param patternFlags UNICODE_CASE | UNIX_LINES | CASE_INSENSITIVE | COMMENTS | MULTILINE
      * @return boolean
      */
     public static boolean isMatch(String myRegEx, String myString, int patternFlags) {
@@ -92,8 +92,8 @@ public class RegExp {
      * This just allows me to check if two objects are the same or not.
      * I left this public.  Maybe someone will use it.
      * 
-     * @param o
-     * @return 
+     * @param o An object
+     * @return String
      */
     public static String objectToString(Object o) {
         //prevent a NullPointerException by returning null if o is null
@@ -108,7 +108,7 @@ public class RegExp {
      * After you call isMatch() or other public methods, then subExps will
      * contain the LAST group match.
      *
-     * @return
+     * @return List&lt;String&gt; containing any grouped results from regexp parse.
      */
     public static List<String> getSubExps() {
         // I want a new object to hold the sub expression results.
@@ -123,10 +123,10 @@ public class RegExp {
      * Yes, there is String.replaceAll(), but I wanted a java.utils.regex
      * solution
      *
-     * @param myRegEx
-     * @param myString
-     * @param myReplace
-     * @return
+     * @param myRegEx  A regular expression
+     * @param myString String to act upon
+     * @param myReplace Replacement string
+     * @return New String with replaced values
      */
     public static String replaceAll(String myRegEx, String myString, String myReplace) {
         Pattern pattern = Pattern.compile(myRegEx);
@@ -139,10 +139,10 @@ public class RegExp {
      * Yes, there is String.replaceFirst(), but I wanted a java.utils.regex
      * solution
      *
-     * @param myRegEx
-     * @param myString
-     * @param myReplace
-     * @return
+     * @param myRegEx A Regular Expression
+     * @param myString String to act upon
+     * @param myReplace Replacement String
+     * @return New String with replaced values
      */
     public static String replaceFirst(String myRegEx, String myString, String myReplace) {
         Pattern pattern = Pattern.compile(myRegEx);
@@ -158,10 +158,10 @@ public class RegExp {
      * http://www.rexegg.com/regex-lookarounds.html
      * http://www.ocpsoft.org/opensource/guide-to-regular-expressions-in-java-part-2/
      *
-     * @param myRegEx
-     * @param myString
-     * @param myReplace
-     * @return
+     * @param myRegEx  A Regular Expression
+     * @param myString String to act upon
+     * @param myReplace Replacement string to use for replacement.
+     * @return New String with replacement in place
      */
     public static String replaceLast(String myRegEx, String myString, String myReplace) {
         String negativeRegEx = "(?s)" + myRegEx + "(?!.*?" + myRegEx + ")"; // This is the magic.
@@ -174,9 +174,9 @@ public class RegExp {
     /**
      * For re-usability in this class and consistency.
      *
-     * @param pattern
-     * @param myString
-     * @return
+     * @param pattern   A regular expression Pattern
+     * @param myString  String to act upon.
+     * @return boolean does it match
      */
     private static boolean isPatternMatch(Pattern pattern, String myString) {
         subExps.clear();

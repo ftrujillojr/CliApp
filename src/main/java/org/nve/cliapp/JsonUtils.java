@@ -26,7 +26,7 @@ public class JsonUtils {
     /**
      * Set this if you want to see more info.
      *
-     * @param verbose
+     * @param verbose boolean
      */
     public static void setVerbose(boolean verbose) {
         JsonUtils.verbose = verbose;
@@ -35,9 +35,9 @@ public class JsonUtils {
     /**
      * Convert a simple Object to JSON in human readable form
      *
-     * @param <T>
-     * @param obj
-     * @return
+     * @param <T> Object type
+     * @param obj object instance
+     * @return String
      */
     public static <T> String objectToJsonPretty(T obj) {
         GsonBuilder gsonBuilder = new GsonBuilder();
@@ -51,9 +51,9 @@ public class JsonUtils {
     /**
      * Convert a simple Object to JSON in compact form.
      *
-     * @param <T>
-     * @param obj
-     * @return
+     * @param <T> Generic type
+     * @param obj object instance
+     * @return String
      */
     public static <T> String objectToJsonCompact(T obj) {
         GsonBuilder gsonBuilder = new GsonBuilder();
@@ -66,8 +66,8 @@ public class JsonUtils {
     /**
      * Quick check if JSON string is valid.
      *
-     * @param jsonString
-     * @return
+     * @param jsonString A valid JSON string
+     * @return boolean
      */
     public static boolean isValidJson(String jsonString) {
         try {
@@ -82,9 +82,9 @@ public class JsonUtils {
      * This method will read JSON from a file, removing \r\n if on Windows and
      * replacing with \n only.
      *
-     * @param fileName
-     * @return
-     * @throws JsonUtilsException
+     * @param fileName The file should only contain ONE json object or array of objects.
+     * @return String
+     * @throws JsonUtilsException  Captures IO Exception or FileNotExistException.
      */
     public static String readJsonFromFile(String fileName) throws JsonUtilsException {
         String jsonStr = null;
@@ -120,9 +120,9 @@ public class JsonUtils {
     /**
      * Write JSON string verbatim to a file.
      *
-     * @param jsonStr
-     * @param fileName
-     * @throws JsonUtilsException
+     * @param jsonStr A valid JSON string
+     * @param fileName Filename to write to
+     * @throws JsonUtilsException Captures IO Exception or FileNotExistException.
      */
     public static void writeJsonToFile(String jsonStr, String fileName) throws JsonUtilsException {
         // Ensure the directory is created for fileName.
@@ -156,9 +156,9 @@ public class JsonUtils {
     /**
      * Convert a JSON string to human readable format.
      *
-     * @param jsonString
-     * @return
-     * @throws JsonUtilsException
+     * @param jsonString A valid JSON string
+     * @return String
+     * @throws JsonUtilsException  Captures JsonSyntaxException
      */
     public static String toPrettyFormat(String jsonString) throws JsonUtilsException {
         String prettyJson = "";
@@ -197,9 +197,9 @@ public class JsonUtils {
     /**
      * Convert JSON string by removing all newlines and white space not quoted.
      *
-     * @param jsonString
-     * @return
-     * @throws JsonUtilsException
+     * @param jsonString A valid JSON string
+     * @return String
+     * @throws JsonUtilsException Captures JsonSyntaxException
      */
     public static String toCompactFormat(String jsonString) throws JsonUtilsException {
         String compactJson;

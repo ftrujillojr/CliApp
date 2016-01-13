@@ -14,7 +14,7 @@ import java.util.TreeSet;
  * relativeCompliment()            Elements in B not in A.
  * symmetricDiff()                 Elements in A or B, but not in intersect.
  * 
- * @param <T> 
+ * @param <T> Generic Type
  */
 public class SetOps<T> {
 
