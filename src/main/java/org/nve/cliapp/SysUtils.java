@@ -856,23 +856,21 @@ public final class SysUtils {
     /**
      * This method assumes you used objectToByteArray() to create byte[]
      * 
-     * @param <T>  Generic type used for RETURN type
      * @param byteArray  Data input is byte[]
-     * @return  returns Generic type.
+     * @return  returns Object that you must cast.
      * @throws IOException  ByteArrayStream might throw.
      * @throws ClassNotFoundException  Complier might need a cast.
      */
-    public static <T> T byteArrayToObject(byte[] byteArray) throws IOException, ClassNotFoundException {
+    public static Object byteArrayToObject(byte[] byteArray) throws IOException, ClassNotFoundException {
         ByteArrayInputStream bis = new ByteArrayInputStream(byteArray);
-        T obj;
-        
+        Object tmpObj = null;
         // try with resources will autoclose ObjectInput
         try (ObjectInput in = new ObjectInputStream(bis)) {
-            obj = (T)in.readObject();
+            tmpObj = in.readObject();
             bis.close();
         } 
         
-        return obj;
+        return tmpObj;
     }
 
     

@@ -408,7 +408,7 @@ public class TestSysUtils {
 
         // ACT - object to byte[] and back to object
         byte[] expectData = SysUtils.objectToByteArray(person);
-        Person restoredPerson = SysUtils.byteArrayToObject(expectData);
+        Person restoredPerson = (Person)SysUtils.byteArrayToObject(expectData);
 
         if (person.equals(restoredPerson) == false) {
             System.out.println(person.toString());

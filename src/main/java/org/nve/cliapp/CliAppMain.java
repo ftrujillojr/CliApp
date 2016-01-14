@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.cli.Option;
 
-public class Main {
+public class CliAppMain {
 
-    public Main() {
+    public CliAppMain() {
     }
 
     public static void main(String[] args) {
