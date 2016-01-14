@@ -1,12 +1,19 @@
 package org.nve.cliapp;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ConvertUtils {
 
     public ConvertUtils() {
-        
+
     }
 
     public static String formatDoubleToString(Double value) {
@@ -53,6 +60,29 @@ public class ConvertUtils {
         String result = Integer.toString(value);
         return (result);
     }
-    
-    
+
+    public static byte[] longToByteArray(long longValue) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(Long.SIZE / Byte.SIZE);
+        byte[] result = null;
+        
+        try (DataOutputStream dos = new DataOutputStream(baos)) {
+            dos.writeLong(longValue);
+            result = baos.toByteArray();
+        } catch (IOException ex) {
+            Logger.getLogger(ConvertUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    public static long byteArrayToLong(byte[] byteArray) {
+        ByteArrayInputStream baos=new ByteArrayInputStream(byteArray);
+        long result = 0;
+        try (DataInputStream dos = new DataInputStream(baos)) {
+            result = dos.readLong();
+        } catch (IOException ex) {
+            Logger.getLogger(ConvertUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
 }
