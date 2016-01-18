@@ -7,7 +7,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nve.cliapp.RSA;
-import org.nve.cliapp.SysUtils;
+import org.nve.cliapp.utils.SysUtils;
 import org.nve.cliapp.exceptions.SysUtilsException;
 //import org.junit.Ignore;
 

@@ -1,4 +1,4 @@
-package org.nve.cliapp;
+package org.nve.cliapp.utils;
 
 import org.nve.cliapp.exceptions.SysUtilsException;
 import java.io.DataOutputStream;

@@ -8,7 +8,7 @@ import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.nve.cliapp.UnsignedBigIntUtils;
+import org.nve.cliapp.utils.UnsignedBigIntUtils;
 import org.nve.cliapp.exceptions.UnsignedBigIntUtilsException;
 //import org.junit.Ignore;
 

@@ -1,4 +1,4 @@
-package org.nve.cliapp;
+package org.nve.cliapp.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
