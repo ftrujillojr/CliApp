@@ -48,18 +48,14 @@ public abstract class MyDBAbstract implements MyDBInterface {
     @Override
     public final void openConnection() throws SQLException {
         try {
-            // A call to Class.forName("X") causes the class named X to be dynamically loaded (at runtime). 
-            // This loads the Driver.
-            Class.forName(""); // use dots, not slashes.
-
+            Class.forName(this.jdbcDriverClass); // use dots, not slashes.
             this.connection = DriverManager.getConnection(this.jdbcString, this.username, this.password);
-            //
         } catch (SQLException ex) {
-            String msg = "ERROR: MySQLImpl.openConnection() for database " + this.database + "\n";
+            String msg = "ERROR: openConnection() for database " + this.database + "\n";
             msg += ex.getMessage();
             throw new SQLException(msg);
         } catch (ClassNotFoundException ex) {
-            String msg = "ERROR: MySQLImpl.openConnection() ClassNotFound.  Could not load => com.mysql.jdbc.Driver\n";
+            String msg = "ERROR: openConnection() ClassNotFound.  Could not load => " + this.jdbcDriverClass + "\n";
             msg += ex.getMessage();
             throw new SQLException(msg);
         }
@@ -68,7 +64,8 @@ public abstract class MyDBAbstract implements MyDBInterface {
     @Override
     public int insertUpdateDelete(String sqlString) throws SQLException {
         int numAffectedRows = 0;
-        try (Statement stmt = (Statement) this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+        
+        try (Statement stmt = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
             numAffectedRows = stmt.executeUpdate(sqlString);
         } catch (SQLException ex) {
             String msg = "ERROR: insertUpdateDelete() for database => " + this.database + "\n";
@@ -108,7 +105,8 @@ public abstract class MyDBAbstract implements MyDBInterface {
     @Override
     public List<Map<String, String>> query(String sqlString) throws SQLException {
         List<Map<String, String>> resultsArray = null;
-        try (Statement stmt = (Statement) this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+        
+        try (Statement stmt = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
             try (ResultSet rs = stmt.executeQuery(sqlString)) {
                 resultsArray = this.convertResultSet2List(rs);
             }
@@ -130,6 +128,7 @@ public abstract class MyDBAbstract implements MyDBInterface {
     public void displayCSV(List<Map<String, String>> arrayOfMaps) {
         List<String> resultsList = this.toCSV(arrayOfMaps);
         Iterator<String> itr = resultsList.listIterator();
+        
         while (itr.hasNext()) {
             String line = itr.next();
             System.out.println(line);
@@ -214,27 +213,6 @@ public abstract class MyDBAbstract implements MyDBInterface {
             columnNamesList.add(columnName);
         }
         return columnNamesList;
-    }
-
-    @SuppressWarnings("RedundantStringConstructorCall")
-    protected String validateEncoding(String encoding) {
-        String enc = "UTF-8";
-
-        if (encoding != null) {
-            switch (encoding) {
-                case "ISO-8859-1":
-                case "US-ASCII":
-                case "UTF-16":
-                case "UTF-16BE":
-                case "UTF-16LE":
-                case "UTF-8":
-                    enc = new String(encoding);
-                    break;
-                default:
-                // just use UTF-8 above.
-            }
-        }
-        return enc;
     }
 
     protected List<Map<String, String>> convertResultSet2List(ResultSet rs) throws SQLException {
