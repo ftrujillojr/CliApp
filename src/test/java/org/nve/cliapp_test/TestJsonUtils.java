@@ -10,9 +10,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nve.cliapp.JsonUtils;
-import org.nve.cliapp.JsonUtilsException;
+import org.nve.cliapp.exceptions.JsonUtilsException;
 import org.nve.cliapp.SysUtils;
-import org.nve.cliapp.SysUtilsException;
+import org.nve.cliapp.exceptions.SysUtilsException;
 
 /*   ARRANGE    ACT    ASSERT
 

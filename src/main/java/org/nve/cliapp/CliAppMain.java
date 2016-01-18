@@ -1,5 +1,6 @@
 package org.nve.cliapp;
 
+import org.nve.cliapp.exceptions.CliWrapperException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

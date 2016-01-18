@@ -1,5 +1,6 @@
 package org.nve.cliapp;
 
+import org.nve.cliapp.exceptions.SysUtilsException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyFactory;

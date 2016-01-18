@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nve.cliapp.RegExp;
 import org.nve.cliapp.SysUtils;
-import org.nve.cliapp.SysUtilsException;
+import org.nve.cliapp.exceptions.SysUtilsException;
 
 //import org.junit.Ignore;
 

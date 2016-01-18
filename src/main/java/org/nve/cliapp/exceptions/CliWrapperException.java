@@ -1,4 +1,4 @@
-package org.nve.cliapp;
+package org.nve.cliapp.exceptions;
 
 public class CliWrapperException extends Exception {
 

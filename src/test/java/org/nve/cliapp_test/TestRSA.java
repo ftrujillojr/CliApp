@@ -8,7 +8,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nve.cliapp.RSA;
 import org.nve.cliapp.SysUtils;
-import org.nve.cliapp.SysUtilsException;
+import org.nve.cliapp.exceptions.SysUtilsException;
 //import org.junit.Ignore;
 
 /*   ARRANGE    ACT    ASSERT
@@ -105,7 +105,7 @@ public class TestRSA {
 
     /**
      * Test RSA algorythm
-     * @throws org.nve.cliapp.SysUtilsException
+     * @throws org.nve.cliapp.exceptions.SysUtilsException
      */
     @Test
     public void testRSA() throws SysUtilsException {

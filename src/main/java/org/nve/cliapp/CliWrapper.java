@@ -1,5 +1,6 @@
 package org.nve.cliapp;
 
+import org.nve.cliapp.exceptions.CliWrapperException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;

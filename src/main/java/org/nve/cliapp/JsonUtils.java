@@ -1,5 +1,6 @@
 package org.nve.cliapp;
 
+import org.nve.cliapp.exceptions.JsonUtilsException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
