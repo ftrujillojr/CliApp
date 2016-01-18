@@ -18,14 +18,14 @@ import java.util.regex.Pattern;
 
 public abstract class MyDBAbstract implements MyDBInterface {
 
-    protected String host;
-    protected String database;
-    protected String username;
-    protected String password;
-    protected List<String> subExps;
-    protected Connection connection = null;
-    protected String jdbcString;
-    protected String jdbcDriverClass;
+    private String host;
+    private String database;
+    private String username;
+    private String password;
+    private List<String> subExps;
+    private Connection connection = null;
+    private String jdbcString;
+    private String jdbcDriverClass;
 
     public MyDBAbstract(String host, String dataBase, String userName, String passWord) {
         this.host = host;
@@ -34,19 +34,16 @@ public abstract class MyDBAbstract implements MyDBInterface {
         this.password = passWord;
         this.subExps = new ArrayList<>();
     }
-
-    @Override
-    public void setJDBCString(String jdbcString) {
-        this.jdbcString = jdbcString;
-    }
     
+    /**
+     * This method will open connection to database.
+     * 
+     * Do not put this method in your Constructors.
+     * 
+     * @throws SQLException  provides detailed error message.
+     */
     @Override
-    public void setJDBCDriverClass(String jdbcDriverClass) {
-        this.jdbcDriverClass = jdbcDriverClass;
-    }
-    
-    @Override
-    public final void openConnection() throws SQLException {
+    public void openConnection() throws SQLException {
         try {
             Class.forName(this.jdbcDriverClass); // use dots, not slashes.
             this.connection = DriverManager.getConnection(this.jdbcString, this.username, this.password);
@@ -61,6 +58,13 @@ public abstract class MyDBAbstract implements MyDBInterface {
         }
     }
     
+   /**
+     * Given an insert, update, or delete; Return numRows affected.
+     * 
+     * @param sqlString An SQL string that will insert/update/or delete a row.
+     * @return  List of Maps of String, String
+     * @throws SQLException provides detailed error message.
+     */
     @Override
     public int insertUpdateDelete(String sqlString) throws SQLException {
         int numAffectedRows = 0;
@@ -76,8 +80,15 @@ public abstract class MyDBAbstract implements MyDBInterface {
         return (numAffectedRows);
     }
 
+/**
+     * This one may return one or more result sets as a List of Strings;
+     * 
+     * @param sqlString An SQL string that COULD return more than ONE result set.
+     * @return List of Maps of String, String
+     * @throws SQLException  produces detailed error message.
+     */
     @Override
-    public List<Map<String, String>> executeProcedure(String sqlString) throws SQLException {
+    public List<Map<String, String>> execute(String sqlString) throws SQLException {
         List<Map<String, String>> resultsList = new ArrayList<>();
 
         try (CallableStatement stmt = this.connection.prepareCall(sqlString)) {
@@ -102,8 +113,35 @@ public abstract class MyDBAbstract implements MyDBInterface {
         return resultsList;
     }
 
+/**
+     * This will return no result set.
+     * 
+     * @param sqlString An SQL string that will not return result set.  USE DROP CREATE...
+     * @throws SQLException  produces detailed error message
+     */
     @Override
-    public List<Map<String, String>> query(String sqlString) throws SQLException {
+    public void executeUpdate(String sqlString) throws SQLException {
+
+        try (CallableStatement stmt = this.connection.prepareCall(sqlString)) {
+            stmt.executeUpdate();
+        } catch (SQLException ex) {
+            String msg = "ERROR: executeUpdate() for database => " + this.database + "\n";
+            msg += sqlString + "\n";
+            msg += ex.getMessage();
+            throw new SQLException(msg);
+        }
+
+    }
+    
+   /**
+     * This returns ONE result set in a List of Strings.
+     * 
+     * @param sqlString An SQL String that will return one result set.
+     * @return List of Maps of String, String
+     * @throws SQLException produces detailed error message
+     */    
+    @Override
+    public List<Map<String, String>> executeQuery(String sqlString) throws SQLException {
         List<Map<String, String>> resultsArray = null;
         
         try (Statement stmt = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
@@ -119,9 +157,16 @@ public abstract class MyDBAbstract implements MyDBInterface {
         return (resultsArray);
     }
 
+/**
+     * Close down connection to database.
+     * 
+     * @throws SQLException Should never get this exception.
+     */
     @Override
     public void closeConnection() throws SQLException {
-        this.connection.close();
+        if(this.connection.isClosed() == false) {
+            this.connection.close();
+        }
     }
     
 
@@ -203,7 +248,15 @@ public abstract class MyDBAbstract implements MyDBInterface {
         System.out.println("");
     }
 
-    // ============================  PROTECTED ===========================================
+    // ============================  PROTECTED ========================================
+    
+    protected void setJDBCString(String jdbcString) {
+        this.jdbcString = jdbcString;
+    }
+    
+    protected  void setJDBCDriverClass(String jdbcDriverClass) {
+        this.jdbcDriverClass = jdbcDriverClass;
+    }
     
     protected List<String> determineColumnNames(ResultSet rs) throws SQLException {
         ArrayList<String> columnNamesList = new ArrayList<>();

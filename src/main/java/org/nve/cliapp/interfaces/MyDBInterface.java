@@ -5,19 +5,16 @@ import java.util.List;
 import java.util.Map;
 
 public interface MyDBInterface {
-    
-    public void setJDBCString(String jdbcString);
-    
-    public void setJDBCDriverClass(String jdbcDriverClass);
-    
+
     public void openConnection() throws SQLException;
     
     public int insertUpdateDelete(String sqlString) throws SQLException;
     
-    public List<Map<String, String>> executeProcedure(String sqlString) throws SQLException;
+    public List<Map<String, String>> execute(String sqlString) throws SQLException;
     
-    public List<Map<String, String>> query(String sqlString) throws SQLException;
+    public void executeUpdate(String sqlString) throws SQLException;
+    
+    public List<Map<String, String>> executeQuery(String sqlString) throws SQLException;
     
     public void closeConnection() throws SQLException;
-    
 }

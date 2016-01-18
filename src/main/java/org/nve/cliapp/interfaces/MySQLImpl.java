@@ -1,8 +1,10 @@
 package org.nve.cliapp.interfaces;
 
+import java.sql.SQLException;
+
 public class MySQLImpl extends MyDBAbstract {
 
-    public MySQLImpl(String l_host, String l_database, String l_username, String l_password) {
+    public MySQLImpl(String l_host, String l_database, String l_username, String l_password) throws SQLException {
         super(l_host, l_database, l_username, l_password);
         
         StringBuilder sb_urlConnection = new StringBuilder();
