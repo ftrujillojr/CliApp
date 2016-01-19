@@ -1,5 +1,6 @@
-package org.nve.cliapp;
+package org.nve.cliapp.utils;
 
+import org.nve.cliapp.exceptions.UnsignedBigIntUtilsException;
 import java.math.BigInteger;
 import javax.xml.bind.DatatypeConverter;
 

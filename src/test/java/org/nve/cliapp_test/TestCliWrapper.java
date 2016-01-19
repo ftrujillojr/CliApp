@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nve.cliapp.CliWrapper;
-import org.nve.cliapp.CliWrapperException;
+import org.nve.cliapp.exceptions.CliWrapperException;
 //import org.junit.Ignore;
 
 /* To run tests:

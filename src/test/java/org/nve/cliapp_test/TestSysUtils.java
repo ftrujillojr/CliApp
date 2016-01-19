@@ -24,9 +24,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.nve.cliapp.RegExp;
-import org.nve.cliapp.SysUtils;
-import org.nve.cliapp.SysUtilsException;
+import org.nve.cliapp.utils.RegExp;
+import org.nve.cliapp.utils.SysUtils;
+import org.nve.cliapp.exceptions.SysUtilsException;
 
 //import org.junit.Ignore;
 

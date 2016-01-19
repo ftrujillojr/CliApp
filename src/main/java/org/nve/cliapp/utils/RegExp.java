@@ -1,4 +1,4 @@
-package org.nve.cliapp;
+package org.nve.cliapp.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -6,7 +6,7 @@ import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.nve.cliapp.RegExp;
+import org.nve.cliapp.utils.RegExp;
 import static org.junit.Assert.*;
 
 /* To run tests:
