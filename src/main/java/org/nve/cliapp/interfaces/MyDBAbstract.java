@@ -1,9 +1,11 @@
 package org.nve.cliapp.interfaces;
 
+import com.google.gson.JsonObject;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -15,6 +17,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import jdk.nashorn.internal.parser.JSONParser;
+import org.nve.cliapp.utils.JsonUtils;
 
 public abstract class MyDBAbstract implements MyDBInterface {
 
@@ -26,6 +30,8 @@ public abstract class MyDBAbstract implements MyDBInterface {
     private Connection connection = null;
     private String jdbcString;
     private String jdbcDriverClass;
+    
+    private List<Map<String, Object>> recordsMetaData;
 
     public MyDBAbstract(String host, String dataBase, String userName, String passWord) {
         this.host = host;
@@ -33,14 +39,16 @@ public abstract class MyDBAbstract implements MyDBInterface {
         this.username = userName;
         this.password = passWord;
         this.subExps = new ArrayList<>();
+        
+        this.recordsMetaData = new ArrayList<>();
     }
-    
+
     /**
      * This method will open connection to database.
-     * 
+     *
      * Do not put this method in your Constructors.
-     * 
-     * @throws SQLException  provides detailed error message.
+     *
+     * @throws SQLException provides detailed error message.
      */
     @Override
     public void openConnection() throws SQLException {
@@ -57,18 +65,18 @@ public abstract class MyDBAbstract implements MyDBInterface {
             throw new SQLException(msg);
         }
     }
-    
-   /**
+
+    /**
      * Given an insert, update, or delete; Return numRows affected.
-     * 
+     *
      * @param sqlString An SQL string that will insert/update/or delete a row.
-     * @return  List of Maps of String, String
+     * @return List of Maps of String, String
      * @throws SQLException provides detailed error message.
      */
     @Override
     public int insertUpdateDelete(String sqlString) throws SQLException {
         int numAffectedRows = 0;
-        
+
         try (Statement stmt = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
             numAffectedRows = stmt.executeUpdate(sqlString);
         } catch (SQLException ex) {
@@ -80,12 +88,13 @@ public abstract class MyDBAbstract implements MyDBInterface {
         return (numAffectedRows);
     }
 
-/**
+    /**
      * This one may return one or more result sets as a List of Strings;
-     * 
-     * @param sqlString An SQL string that COULD return more than ONE result set.
+     *
+     * @param sqlString An SQL string that COULD return more than ONE result
+     * set.
      * @return List of Maps of String, String
-     * @throws SQLException  produces detailed error message.
+     * @throws SQLException produces detailed error message.
      */
     @Override
     public List<Map<String, String>> execute(String sqlString) throws SQLException {
@@ -113,11 +122,12 @@ public abstract class MyDBAbstract implements MyDBInterface {
         return resultsList;
     }
 
-/**
+    /**
      * This will return no result set.
-     * 
-     * @param sqlString An SQL string that will not return result set.  USE DROP CREATE...
-     * @throws SQLException  produces detailed error message
+     *
+     * @param sqlString An SQL string that will not return result set. USE DROP
+     * CREATE...
+     * @throws SQLException produces detailed error message
      */
     @Override
     public void executeUpdate(String sqlString) throws SQLException {
@@ -132,48 +142,63 @@ public abstract class MyDBAbstract implements MyDBInterface {
         }
 
     }
-    
-   /**
+
+    /**
      * This returns ONE result set in a List of Strings.
-     * 
+     *
      * @param sqlString An SQL String that will return one result set.
      * @return List of Maps of String, String
      * @throws SQLException produces detailed error message
-     */    
+     */
     @Override
     public List<Map<String, String>> executeQuery(String sqlString) throws SQLException {
         List<Map<String, String>> resultsArray = null;
-        
+
         try (Statement stmt = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
             try (ResultSet rs = stmt.executeQuery(sqlString)) {
                 resultsArray = this.convertResultSet2List(rs);
             }
         } catch (SQLException ex) {
-            String msg = "ERROR: query() for database => " + this.database + "\n";
+            String msg = "ERROR: executeQuery() for database => " + this.database + "\n";
             msg += sqlString + "\n";
             msg += ex.getMessage();
             throw new SQLException(msg);
         }
         return (resultsArray);
     }
+    
+    public String executeQueryToJson(String sqlString) throws SQLException {
+        String results = "";
 
-/**
+        try (Statement stmt = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+            try (ResultSet rs = stmt.executeQuery(sqlString)) {
+                
+            }
+        } catch (SQLException ex) {
+            String msg = "ERROR: executeQueryToJson() for database => " + this.database + "\n";
+            msg += sqlString + "\n";
+            msg += ex.getMessage();
+            throw new SQLException(msg);
+        }
+        return (results);
+    }
+
+    /**
      * Close down connection to database.
-     * 
+     *
      * @throws SQLException Should never get this exception.
      */
     @Override
     public void closeConnection() throws SQLException {
-        if(this.connection.isClosed() == false) {
+        if (this.connection.isClosed() == false) {
             this.connection.close();
         }
     }
-    
 
     public void displayCSV(List<Map<String, String>> arrayOfMaps) {
         List<String> resultsList = this.toCSV(arrayOfMaps);
         Iterator<String> itr = resultsList.listIterator();
-        
+
         while (itr.hasNext()) {
             String line = itr.next();
             System.out.println(line);
@@ -249,18 +274,19 @@ public abstract class MyDBAbstract implements MyDBInterface {
     }
 
     // ============================  PROTECTED ========================================
-    
     protected void setJDBCString(String jdbcString) {
         this.jdbcString = jdbcString;
     }
-    
-    protected  void setJDBCDriverClass(String jdbcDriverClass) {
+
+    protected void setJDBCDriverClass(String jdbcDriverClass) {
         this.jdbcDriverClass = jdbcDriverClass;
     }
-    
+
     protected List<String> determineColumnNames(ResultSet rs) throws SQLException {
         ArrayList<String> columnNamesList = new ArrayList<>();
-        int columnCount = rs.getMetaData().getColumnCount();
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnCount = rsmd.getColumnCount();
+        
         for (int colNo = 1; colNo <= columnCount; colNo++) {
             String columnName = rs.getMetaData().getColumnName(colNo);
             columnNamesList.add(columnName);
@@ -278,9 +304,11 @@ public abstract class MyDBAbstract implements MyDBInterface {
             for (int ii = 0; ii < columnNamesList.size(); ii++) {
                 String columnName = columnNamesList.get(ii);
                 String columnValue = rs.getString(columnNamesList.get(ii));
+                
                 if (this.isMatch(".+_date", columnName) && (columnValue == null || columnValue.isEmpty())) {
                     columnValue = "0000-00-00";
                 }
+                
                 if (columnValue == null) {
                     columnValue = "NULL";
                 }
@@ -292,6 +320,7 @@ public abstract class MyDBAbstract implements MyDBInterface {
         return (resultsArray);
     }
 
+    
     protected boolean isMatch(String myRegEx, String myString) {
         this.subExps.clear();
         Pattern pattern = Pattern.compile(myRegEx);

@@ -3,9 +3,9 @@ package org.nve.cliapp_test;
 // junit.framework.Test package is the legacy namespace used with Junit v3 and older versions of Java that do not support annotations.
 // org.junit.Test is the new namespace used by JUnit v4 and requires Java v1.5 or later for its annotations.
 import java.nio.file.Paths;
-import java.util.Arrays;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.nve.cliapp.RSA;
 import org.nve.cliapp.utils.SysUtils;
@@ -112,6 +112,7 @@ public class TestRSA {
 >>>>>>> c4a48c9cca69cc7eba9cf4ba3d25cfb5680b7834
      */
     @Test
+    @Ignore
     public void testRSA() throws SysUtilsException {
         SysUtils.setVerbose(true);
 
