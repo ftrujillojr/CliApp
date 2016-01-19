@@ -828,6 +828,10 @@ public final class SysUtils {
      */
     public static void displayHexDump(byte[] byteArray) {
         String dash = "-";
+        
+        if(SysUtils.verbose) {
+            System.out.println("byte[] length " + byteArray.length);
+        }
 
         System.out.print(String.format("\n%8s  ", " "));
         for (int ii = 0; ii < 16; ii++) {
