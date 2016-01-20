@@ -51,6 +51,21 @@ public class JsonUtils {
     }
 
     /**
+     * Do not serialize NULL fields.
+     * 
+     * @param <T> Object type
+     * @param obj object instance
+     * @return  JSON String
+     */
+    public static <T> String objectToJsonPrettyNoNulls(T obj) {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setPrettyPrinting();
+        Gson gson = gsonBuilder.create();
+        String json = gson.toJson(obj);
+        return (json);
+    }
+
+    /**
      * Convert a simple Object to JSON in compact form.
      *
      * @param <T> Generic type
@@ -60,6 +75,20 @@ public class JsonUtils {
     public static <T> String objectToJsonCompact(T obj) {
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.serializeNulls();
+        Gson gson = gsonBuilder.create();
+        String json = gson.toJson(obj);
+        return (json);
+    }
+
+    /**
+     * Do not serialize NULL fields.
+     * 
+     * @param <T> Object type
+     * @param obj object instance
+     * @return  JSON String
+     */
+    public static <T> String objectToJsonCompactNoNulls(T obj) {
+        GsonBuilder gsonBuilder = new GsonBuilder();
         Gson gson = gsonBuilder.create();
         String json = gson.toJson(obj);
         return (json);

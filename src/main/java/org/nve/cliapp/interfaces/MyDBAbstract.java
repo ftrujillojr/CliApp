@@ -320,16 +320,17 @@ public abstract class MyDBAbstract implements MyDBInterface {
 
         return (resultsArray);
     }
-
+    
     // http://www.studytrails.com/java/json/java-google-json-java-to-json.jsp
     protected String convertResultSet2Json(ResultSet rs) throws SQLException {
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
-        JsonArray jsonArray = new JsonArray();
         Set<String> tableNameSet = new TreeSet<>();
         
+        JsonArray jsonRowsArray = new JsonArray();
+        
         while (rs.next()) {
-            JsonObject jsonObject = new JsonObject();
+            JsonObject jsonRowObject = new JsonObject();
             
             for (int colNo = 1; colNo <= columnCount; colNo++) {
                 String columnName = rsmd.getColumnName(colNo);
@@ -342,43 +343,43 @@ public abstract class MyDBAbstract implements MyDBInterface {
 
                 if (columnValue == null) {
                     if (this.isMatch(".+_date|.+Date", columnName) && (columnValue.isEmpty())) {
-                        jsonObject.addProperty(columnName, "0000-00-00");
+                        jsonRowObject.addProperty(columnName, "0000-00-00");
                     } else {
-                        jsonObject.addProperty(columnName, "null");
+                        jsonRowObject.addProperty(columnName, "null");
                     }
                 } else {
                     switch (rsmd.getColumnTypeName(colNo)) {
                         case "ARRAY":  // RDBMS usually do not stored ARRAYS.
                             Array array = rs.getArray(columnCount);
                             String[] strArray = (String[]) array.getArray();
-                            jsonObject.addProperty(columnName, JsonUtils.objectToJsonCompact(strArray));
+                            jsonRowObject.addProperty(columnName, JsonUtils.objectToJsonCompactNoNulls(strArray));
                         case "DOUBLE":
-                            jsonObject.addProperty(columnName, rs.getDouble(colNo));
+                            jsonRowObject.addProperty(columnName, rs.getDouble(colNo));
                             break;
                         case "TINYINT":
                         case "BOOLEAN":
-                            jsonObject.addProperty(columnName, (rs.getBoolean(colNo)) ? Boolean.TRUE : Boolean.FALSE);
+                            jsonRowObject.addProperty(columnName, (rs.getBoolean(colNo)) ? Boolean.TRUE : Boolean.FALSE);
                             break;
                         case "FLOAT":
-                            jsonObject.addProperty(columnName, rs.getFloat(colNo));
+                            jsonRowObject.addProperty(columnName, rs.getFloat(colNo));
                             break;
                         case "LONG":
-                            jsonObject.addProperty(columnName, rs.getLong(colNo));
+                            jsonRowObject.addProperty(columnName, rs.getLong(colNo));
                             break;
                         case "INT":
-                            jsonObject.addProperty(columnName, rs.getInt(colNo));
+                            jsonRowObject.addProperty(columnName, rs.getInt(colNo));
                             break;
                         default:
-                            jsonObject.addProperty(columnName, rs.getString(colNo));
+                            jsonRowObject.addProperty(columnName, rs.getString(colNo));
                             break;
                     }
                 }
             }
             
-            jsonArray.add(jsonObject);
+            jsonRowsArray.add(jsonRowObject);
         }
         
-        JsonObject jsonObjectOuter = new JsonObject();
+        JsonObject jsonQueryObject = new JsonObject();
         JsonArray jsonArrayTables = new JsonArray();
         Iterator<String> itr = tableNameSet.iterator();
         while(itr.hasNext()) {
@@ -386,10 +387,10 @@ public abstract class MyDBAbstract implements MyDBInterface {
             jsonArrayTables.add(tableName);
         }
         
-        jsonObjectOuter.add("tableNames", jsonArrayTables);
-        jsonObjectOuter.add("rows", jsonArray);
+        jsonQueryObject.add("tableNames", jsonArrayTables);
+        jsonQueryObject.add("rows", jsonRowsArray);
 
-        String results = JsonUtils.objectToJsonPretty(jsonObjectOuter);
+        String results = JsonUtils.objectToJsonPrettyNoNulls(jsonQueryObject);
         return (results);
     }
 
