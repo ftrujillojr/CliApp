@@ -1,6 +1,8 @@
 package org.nve.cliapp.interfaces;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import java.sql.Array;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -17,7 +19,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import jdk.nashorn.internal.parser.JSONParser;
 import org.nve.cliapp.utils.JsonUtils;
 
 public abstract class MyDBAbstract implements MyDBInterface {
@@ -30,7 +31,7 @@ public abstract class MyDBAbstract implements MyDBInterface {
     private Connection connection = null;
     private String jdbcString;
     private String jdbcDriverClass;
-    
+
     private List<Map<String, Object>> recordsMetaData;
 
     public MyDBAbstract(String host, String dataBase, String userName, String passWord) {
@@ -39,7 +40,7 @@ public abstract class MyDBAbstract implements MyDBInterface {
         this.username = userName;
         this.password = passWord;
         this.subExps = new ArrayList<>();
-        
+
         this.recordsMetaData = new ArrayList<>();
     }
 
@@ -166,13 +167,13 @@ public abstract class MyDBAbstract implements MyDBInterface {
         }
         return (resultsArray);
     }
-    
+
     public String executeQueryToJson(String sqlString) throws SQLException {
         String results = "";
 
         try (Statement stmt = this.connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
             try (ResultSet rs = stmt.executeQuery(sqlString)) {
-                
+                results = convertResultSet2Json(rs);
             }
         } catch (SQLException ex) {
             String msg = "ERROR: executeQueryToJson() for database => " + this.database + "\n";
@@ -286,7 +287,7 @@ public abstract class MyDBAbstract implements MyDBInterface {
         ArrayList<String> columnNamesList = new ArrayList<>();
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
-        
+
         for (int colNo = 1; colNo <= columnCount; colNo++) {
             String columnName = rs.getMetaData().getColumnName(colNo);
             columnNamesList.add(columnName);
@@ -304,11 +305,11 @@ public abstract class MyDBAbstract implements MyDBInterface {
             for (int ii = 0; ii < columnNamesList.size(); ii++) {
                 String columnName = columnNamesList.get(ii);
                 String columnValue = rs.getString(columnNamesList.get(ii));
-                
+
                 if (this.isMatch(".+_date", columnName) && (columnValue == null || columnValue.isEmpty())) {
                     columnValue = "0000-00-00";
                 }
-                
+
                 if (columnValue == null) {
                     columnValue = "NULL";
                 }
@@ -320,7 +321,78 @@ public abstract class MyDBAbstract implements MyDBInterface {
         return (resultsArray);
     }
 
-    
+    // http://www.studytrails.com/java/json/java-google-json-java-to-json.jsp
+    protected String convertResultSet2Json(ResultSet rs) throws SQLException {
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columnCount = rsmd.getColumnCount();
+        JsonArray jsonArray = new JsonArray();
+        Set<String> tableNameSet = new TreeSet<>();
+        
+        while (rs.next()) {
+            JsonObject jsonObject = new JsonObject();
+            
+            for (int colNo = 1; colNo <= columnCount; colNo++) {
+                String columnName = rsmd.getColumnName(colNo);
+                String columnValue = rs.getString(colNo);
+                String tableName = rsmd.getTableName(colNo);
+                
+                if(tableNameSet.contains(tableName) == false) {
+                    tableNameSet.add(tableName);
+                }
+
+                if (columnValue == null) {
+                    if (this.isMatch(".+_date|.+Date", columnName) && (columnValue.isEmpty())) {
+                        jsonObject.addProperty(columnName, "0000-00-00");
+                    } else {
+                        jsonObject.addProperty(columnName, "null");
+                    }
+                } else {
+                    switch (rsmd.getColumnTypeName(colNo)) {
+                        case "ARRAY":  // RDBMS usually do not stored ARRAYS.
+                            Array array = rs.getArray(columnCount);
+                            String[] strArray = (String[]) array.getArray();
+                            jsonObject.addProperty(columnName, JsonUtils.objectToJsonCompact(strArray));
+                        case "DOUBLE":
+                            jsonObject.addProperty(columnName, rs.getDouble(colNo));
+                            break;
+                        case "TINYINT":
+                        case "BOOLEAN":
+                            jsonObject.addProperty(columnName, (rs.getBoolean(colNo)) ? Boolean.TRUE : Boolean.FALSE);
+                            break;
+                        case "FLOAT":
+                            jsonObject.addProperty(columnName, rs.getFloat(colNo));
+                            break;
+                        case "LONG":
+                            jsonObject.addProperty(columnName, rs.getLong(colNo));
+                            break;
+                        case "INT":
+                            jsonObject.addProperty(columnName, rs.getInt(colNo));
+                            break;
+                        default:
+                            jsonObject.addProperty(columnName, rs.getString(colNo));
+                            break;
+                    }
+                }
+            }
+            
+            jsonArray.add(jsonObject);
+        }
+        
+        JsonObject jsonObjectOuter = new JsonObject();
+        JsonArray jsonArrayTables = new JsonArray();
+        Iterator<String> itr = tableNameSet.iterator();
+        while(itr.hasNext()) {
+            String tableName = itr.next();
+            jsonArrayTables.add(tableName);
+        }
+        
+        jsonObjectOuter.add("tableNames", jsonArrayTables);
+        jsonObjectOuter.add("rows", jsonArray);
+
+        String results = JsonUtils.objectToJsonPretty(jsonObjectOuter);
+        return (results);
+    }
+
     protected boolean isMatch(String myRegEx, String myString) {
         this.subExps.clear();
         Pattern pattern = Pattern.compile(myRegEx);

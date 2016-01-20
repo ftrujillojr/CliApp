@@ -168,14 +168,14 @@ public class TestMySQLImpl {
             System.out.println("===========================");
             mySQLImpl.displayCSV(results);
         } else {
-            mySQLImpl.displayArrayListOfMaps(results);
+            //mySQLImpl.displayArrayListOfMaps(results);
         }
 
         assertEquals(4, results.size());
 
-//        String jsonResults = mySQLImpl.executeQueryToJson(sqlString);
-//        
-//        System.out.println("JSON RESULTS " + jsonResults);
+        String jsonResults = mySQLImpl.executeQueryToJson(sqlString);
+        
+        System.out.println("JSON RESULTS\n" + jsonResults);
     }
 
 }
