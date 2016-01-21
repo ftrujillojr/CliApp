@@ -518,6 +518,19 @@ public final class SysUtils {
         }
     }
 
+    public static <T,U> void displayMap(Map<T,U> map) {
+        Iterator<T> itr = map.keySet().iterator();
+        while (itr.hasNext()) {
+            T t = itr.next();
+            U u = map.get(t);
+            if (u != null) {
+                System.out.println(String.format("%-25s: %s", t.toString(), u.toString()));
+            } else {
+                System.out.println(String.format("%-25s: %s", t.toString(), "(null)"));
+            }
+        }
+    }
+    
     /**
      * Display a Set&lt;T&gt; to stdout.
      *

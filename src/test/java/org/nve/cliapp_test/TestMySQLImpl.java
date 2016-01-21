@@ -190,6 +190,7 @@ public class TestMySQLImpl {
             "p.last_name",
             "p.age AS ageInYears",
             "MAX(first_name)",
+            "MAX(t.first_name)",
             "COUNT(*)",
             "*"
         });
