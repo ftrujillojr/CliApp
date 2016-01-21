@@ -510,7 +510,11 @@ public final class SysUtils {
         Iterator<T> itr = list.iterator();
         while (itr.hasNext()) {
             T t = itr.next();
-            System.out.println(t.toString());
+            if (t != null && t.toString() != null) {
+                System.out.println(t.toString());
+            } else {
+                System.out.println("(null)");
+            }
         }
     }
 
@@ -701,7 +705,7 @@ public final class SysUtils {
         if (SysUtils.verbose) {
             System.out.println("VERBOSE: writeBinaryFile() for " + filename);
         }
-        
+
         // try(with resources)      will close DataOutputStream and all of its derived streams.
         try (DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(new File(filename), append), SysUtils.binaryBufferSize))) {
             dos.write(byteData);
@@ -788,7 +792,7 @@ public final class SysUtils {
         // Ensure the directory is created for filename.
         String dirname = SysUtils.getDirName(filename);
         SysUtils.mkdir_p(dirname);
-        
+
         if (SysUtils.verbose) {
             System.out.println("VERBOSE: writeTextFile() for " + filename + "  append " + appendToFile);
         }
@@ -829,8 +833,8 @@ public final class SysUtils {
      */
     public static void displayHexDump(byte[] byteArray) {
         String dash = "-";
-        
-        if(SysUtils.verbose) {
+
+        if (SysUtils.verbose) {
             System.out.println("byte[] length " + byteArray.length);
         }
 

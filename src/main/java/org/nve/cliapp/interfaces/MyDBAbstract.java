@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import static java.sql.ResultSetMetaData.columnNullable;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -320,36 +321,45 @@ public abstract class MyDBAbstract implements MyDBInterface {
 
         return (resultsArray);
     }
-    
+
     // http://www.studytrails.com/java/json/java-google-json-java-to-json.jsp
     protected String convertResultSet2Json(ResultSet rs) throws SQLException {
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
         Set<String> tableNameSet = new TreeSet<>();
-        
+
+        JsonObject columnNameTypesObject = new JsonObject();
+        for (int colNo = 1; colNo <= columnCount; colNo++) {
+            int displaySize = rsmd.getColumnDisplaySize(colNo);
+            String nullable = (rsmd.isNullable(colNo) == ResultSetMetaData.columnNullable)?" NULL":" NOT NULL";
+            String columnTypeDef = rsmd.getColumnTypeName(colNo) + " " + displaySize + nullable;
+            if(rsmd.isAutoIncrement(colNo)) {
+                columnTypeDef += " AUTO_INCREMENT"; 
+            }
+            columnNameTypesObject.addProperty(rsmd.getColumnName(colNo), columnTypeDef);
+        }
+
         JsonArray jsonRowsArray = new JsonArray();
-        
+
         while (rs.next()) {
             JsonObject jsonRowObject = new JsonObject();
-            
+
             for (int colNo = 1; colNo <= columnCount; colNo++) {
                 String columnName = rsmd.getColumnName(colNo);
                 String columnValue = rs.getString(colNo);
                 String tableName = rsmd.getTableName(colNo);
-                
-                if(tableNameSet.contains(tableName) == false) {
-                    tableNameSet.add(tableName);
-                }
+
+                tableNameSet.add(tableName);
 
                 if (columnValue == null) {
-                    if (this.isMatch(".+_date|.+Date", columnName) && (columnValue.isEmpty())) {
+                    if (this.isMatch(".+_date|.+Date", columnName)) {
                         jsonRowObject.addProperty(columnName, "0000-00-00");
                     } else {
                         jsonRowObject.addProperty(columnName, "null");
                     }
                 } else {
                     switch (rsmd.getColumnTypeName(colNo)) {
-                        case "ARRAY":  // RDBMS usually do not stored ARRAYS.
+                        case "ARRAY":  // RDBMS usually do not stored ARRAYS.  Storing JSON Array string instead.
                             Array array = rs.getArray(columnCount);
                             String[] strArray = (String[]) array.getArray();
                             jsonRowObject.addProperty(columnName, JsonUtils.objectToJsonCompactNoNulls(strArray));
@@ -375,19 +385,20 @@ public abstract class MyDBAbstract implements MyDBInterface {
                     }
                 }
             }
-            
+
             jsonRowsArray.add(jsonRowObject);
         }
-        
+
         JsonObject jsonQueryObject = new JsonObject();
         JsonArray jsonArrayTables = new JsonArray();
         Iterator<String> itr = tableNameSet.iterator();
-        while(itr.hasNext()) {
+        while (itr.hasNext()) {
             String tableName = itr.next();
             jsonArrayTables.add(tableName);
         }
-        
+
         jsonQueryObject.add("tableNames", jsonArrayTables);
+        jsonQueryObject.add("columnNameTypes", columnNameTypesObject);
         jsonQueryObject.add("rows", jsonRowsArray);
 
         String results = JsonUtils.objectToJsonPrettyNoNulls(jsonQueryObject);

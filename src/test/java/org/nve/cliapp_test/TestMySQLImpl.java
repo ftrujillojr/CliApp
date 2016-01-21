@@ -8,7 +8,10 @@ import java.util.Map;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.nve.cliapp.MySqlBuild;
+import org.nve.cliapp.exceptions.MySqlBuildException;
 import org.nve.cliapp.interfaces.MySQLImpl;
 import org.nve.cliapp.utils.RegExp;
 //import org.junit.Ignore;
@@ -120,7 +123,7 @@ public class TestMySQLImpl {
      * @throws java.sql.SQLException
      */
     @Test
-    //@Ignore
+    @Ignore
     public void test() throws SQLException {
 
         mySQLImpl.executeUpdate("DROP TABLE IF EXISTS `tmpuser`.`Person`;");
@@ -174,8 +177,22 @@ public class TestMySQLImpl {
         assertEquals(4, results.size());
 
         String jsonResults = mySQLImpl.executeQueryToJson(sqlString);
-        
+
         System.out.println("JSON RESULTS\n" + jsonResults);
+    }
+
+    @Test
+    public void mysqlbuild() throws MySqlBuildException {
+        MySqlBuild mySqlBuild = new MySqlBuild();
+
+        mySqlBuild.bSELECT(new String[] {
+            "first_name",
+            "p.last_name",
+            "p.age AS ageInYears",
+            "MAX(first_name)",
+            "COUNT(*)",
+            "*"
+        });
     }
 
 }

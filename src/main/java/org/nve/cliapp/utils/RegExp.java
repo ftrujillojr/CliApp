@@ -112,7 +112,8 @@ public class RegExp {
      */
     public static List<String> getSubExps() {
         // I want a new object to hold the sub expression results.
-        List<String> newSubExps = new ArrayList<>(subExps);
+        List<String> newSubExps = new ArrayList<>();
+        newSubExps.addAll(subExps);
 //        String str1 = RegExp.objectToString(subExps);
 //        String str2 = RegExp.objectToString(newSubExps);
 //        System.out.println(str1 + " <=> " + str2);
