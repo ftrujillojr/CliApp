@@ -185,15 +185,18 @@ public class TestMySQLImpl {
     public void mysqlbuild() throws MySqlBuildException {
         MySqlBuild mySqlBuild = new MySqlBuild();
 
-        mySqlBuild.bSELECT(new String[] {
-            "first_name",
-            "p.last_name",
-            "p.age AS ageInYears",
-            "MAX(first_name)",
-            "MAX(t.first_name)",
-            "COUNT(*)",
-            "*"
-        });
+        System.out.println(
+                mySqlBuild.bSELECT(new String[]{
+                    "first_name",
+                    "p.last_name",
+                    "p.age AS ageInYears",
+                    "MAX(first_name)",
+                    "MAX(t.first_name)",
+                    "COUNT(*)",
+                    "*"
+                }).toString()
+        );
+
     }
 
 }
