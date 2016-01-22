@@ -331,10 +331,10 @@ public abstract class MyDBAbstract implements MyDBInterface {
         JsonObject columnNameTypesObject = new JsonObject();
         for (int colNo = 1; colNo <= columnCount; colNo++) {
             int displaySize = rsmd.getColumnDisplaySize(colNo);
-            String nullable = (rsmd.isNullable(colNo) == ResultSetMetaData.columnNullable)?" NULL":" NOT NULL";
+            String nullable = (rsmd.isNullable(colNo) == ResultSetMetaData.columnNullable) ? " NULL" : " NOT NULL";
             String columnTypeDef = rsmd.getColumnTypeName(colNo) + " " + displaySize + nullable;
-            if(rsmd.isAutoIncrement(colNo)) {
-                columnTypeDef += " AUTO_INCREMENT"; 
+            if (rsmd.isAutoIncrement(colNo)) {
+                columnTypeDef += " AUTO_INCREMENT";
             }
             columnNameTypesObject.addProperty(rsmd.getColumnName(colNo), columnTypeDef);
         }
@@ -348,7 +348,7 @@ public abstract class MyDBAbstract implements MyDBInterface {
                 String columnName = rsmd.getColumnName(colNo);
                 String columnValue = rs.getString(colNo);
                 String tableName = rsmd.getTableName(colNo);
-
+                
                 tableNameSet.add(tableName);
 
                 if (columnValue == null) {
@@ -363,6 +363,7 @@ public abstract class MyDBAbstract implements MyDBInterface {
                             Array array = rs.getArray(columnCount);
                             String[] strArray = (String[]) array.getArray();
                             jsonRowObject.addProperty(columnName, JsonUtils.objectToJsonCompactNoNulls(strArray));
+                            break;
                         case "DOUBLE":
                             jsonRowObject.addProperty(columnName, rs.getDouble(colNo));
                             break;
