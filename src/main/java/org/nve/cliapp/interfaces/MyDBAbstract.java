@@ -24,16 +24,16 @@ import org.nve.cliapp.utils.JsonUtils;
 
 public abstract class MyDBAbstract implements MyDBInterface {
 
-    private String host;
-    private String database;
-    private String username;
-    private String password;
-    private List<String> subExps;
+    private final String host;
+    private final String database;
+    private final String username;
+    private final String password;
+    private final List<String> subExps;
     private Connection connection = null;
     private String jdbcString;
     private String jdbcDriverClass;
 
-    private List<Map<String, Object>> recordsMetaData;
+    private final List<Map<String, Object>> recordsMetaData;
 
     public MyDBAbstract(String host, String dataBase, String userName, String passWord) {
         this.host = host;
@@ -192,7 +192,7 @@ public abstract class MyDBAbstract implements MyDBInterface {
      */
     @Override
     public void closeConnection() throws SQLException {
-        if (this.connection.isClosed() == false) {
+        if (this.connection != null && this.connection.isClosed() == false) {
             this.connection.close();
         }
     }

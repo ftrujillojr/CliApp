@@ -98,12 +98,12 @@ public class TestMySQLImpl {
      */
     @BeforeClass
     public static void setUpClass() throws SQLException {
-        String host = "nsglnxdev1.micron.com";
+        String host = "localhost";
         String database = "tmpuser";
         String username = "tmpuser";
         String password = "tmpuser";
 
-        mySQLImpl = new MySQLImpl("nsglnxdev1.micron.com", "tmpuser", "tmpuser", "tmpuser");
+        mySQLImpl = new MySQLImpl(host, database, username, password);
         mySQLImpl.openConnection();
     }
 
@@ -182,6 +182,9 @@ public class TestMySQLImpl {
         String jsonResults = mySQLImpl.executeQueryToJson(sqlString);
 
         System.out.println("JSON RESULTS\n" + jsonResults);
+        
+        mySQLImpl.executeUpdate("DROP TABLE IF EXISTS `tmpuser`.`Person`;");
+        
     }
 
     @Test
