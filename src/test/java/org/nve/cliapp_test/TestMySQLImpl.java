@@ -144,7 +144,7 @@ public class TestMySQLImpl {
                 + "   `tmpuser`.`Person`\n"
                 + "   ( `first_name`, `last_name`, `age`, `salary`, `is_student` )\n"
                 + "VALUES\n"
-                + "(__REPLACE__);";
+                + "   (__REPLACE__);";
 
         String[] rowsToInsert = {
             "'Bugs', 'Bunny', 51, 8.50, 0",
