@@ -22,7 +22,7 @@ public class MySqlBuild {
         return this.sqlStatement.toString();
     }
     
-    public MySqlBuild bSELECT(String[] columnNames) throws MySqlBuildException {
+    public MySqlBuild SELECT(String[] columnNames) throws MySqlBuildException {
         this.clear();
         this.sqlStatement.append("SELECT").append("\n");
         List<String> subExps;
@@ -37,13 +37,17 @@ public class MySqlBuild {
                 throw new MySqlBuildException(msg);
             }
 
-            this.sqlStatement.append(indent).append(columnNames[ii]).append("\n");
+            this.sqlStatement.append(indent).append(columnNames[ii].trim());
+            if((ii+1) < columnNames.length) {
+                this.sqlStatement.append(",");
+            }
+            this.sqlStatement.append("\n");
         }
 
         return (this);
     }
 
-    public MySqlBuild bFROM(String[] tableNames) {
+    public MySqlBuild FROM(String[] tableNames) {
         this.sqlStatement.append("FROM").append("\n");
         for (int ii = 0; ii < tableNames.length; ii++) {
             this.sqlStatement.append(indent).append(tableNames[ii]).append("\n");

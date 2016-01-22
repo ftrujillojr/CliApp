@@ -123,7 +123,6 @@ public class TestMySQLImpl {
      * @throws java.sql.SQLException
      */
     @Test
-    @Ignore
     public void test() throws SQLException {
 
         mySQLImpl.executeUpdate("DROP TABLE IF EXISTS `tmpuser`.`Person`;");
@@ -141,7 +140,11 @@ public class TestMySQLImpl {
         sb.append("ENGINE = InnoDB;").append("\n");
         mySQLImpl.executeUpdate(sb.toString());
 
-        String insPerson = "INSERT INTO `tmpuser`.`Person` ( `first_name`, `last_name`, `age`, `salary`, `is_student` ) VALUES (__REPLACE__);";
+        String insPerson = "INSERT INTO\n"
+                + "   `tmpuser`.`Person`\n"
+                + "   ( `first_name`, `last_name`, `age`, `salary`, `is_student` )\n"
+                + "VALUES\n"
+                + "(__REPLACE__);";
 
         String[] rowsToInsert = {
             "'Bugs', 'Bunny', 51, 8.50, 0",
@@ -186,14 +189,12 @@ public class TestMySQLImpl {
         MySqlBuild mySqlBuild = new MySqlBuild();
 
         System.out.println(
-                mySqlBuild.bSELECT(new String[]{
+                mySqlBuild.SELECT(new String[]{
                     "first_name",
-                    "p.last_name",
-                    "p.age AS ageInYears",
-                    "MAX(first_name)",
-                    "MAX(t.first_name)",
-                    "COUNT(*)",
-                    "*"
+                    "last_name",
+                    "age",
+                }).FROM(new String[] {
+                    "Person AS p"
                 }).toString()
         );
 
