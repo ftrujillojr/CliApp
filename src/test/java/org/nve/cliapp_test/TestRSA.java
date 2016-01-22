@@ -104,12 +104,8 @@ public class TestRSA {
 
     /**
      * Test RSA algorythm
-<<<<<<< HEAD
      *
-     * @throws org.nve.cliapp.SysUtilsException
-=======
      * @throws org.nve.cliapp.exceptions.SysUtilsException
->>>>>>> c4a48c9cca69cc7eba9cf4ba3d25cfb5680b7834
      */
     @Test
     @Ignore
