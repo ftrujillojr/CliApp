@@ -2,12 +2,11 @@ package org.nve.cliapp_test;
 
 // junit.framework.Test package is the legacy namespace used with Junit v3 and older versions of Java that do not support annotations.
 // org.junit.Test is the new namespace used by JUnit v4 and requires Java v1.5 or later for its annotations.
-import java.nio.file.Paths;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.nve.cliapp.RSA;
+import org.nve.cliapp.exceptions.RSAException;
 import org.nve.cliapp.utils.SysUtils;
 import org.nve.cliapp.exceptions.SysUtilsException;
 //import org.junit.Ignore;
@@ -106,18 +105,19 @@ public class TestRSA {
      * Test RSA algorythm
      *
      * @throws org.nve.cliapp.exceptions.SysUtilsException
+     * @throws org.nve.cliapp.exceptions.RSAException
      */
     @Test
-    @Ignore
-    public void testRSA() throws SysUtilsException {
+    public void testRSA() throws SysUtilsException, RSAException {
         SysUtils.setVerbose(true);
 
-        RSA rsa = new RSA(Paths.get(SysUtils.getTmpDir(), "testRSA").toString(), "CliApp", 1024);
-
-        String encryptedStr = rsa.encrypt("Hello");
+//        RSA rsa = new RSA(Paths.get(SysUtils.getTmpDir(), "testRSA").toString(), "CliApp", 1024);
+        RSA rsa = new RSA();
+        
+        String encryptedStr = rsa.encryptBase64("Hello");
         System.out.println("encryptedStr => " + encryptedStr);
-        String decryptedStr = rsa.decrypt(encryptedStr);
-//        System.out.println("decryptedStr => " + decryptedStr);
+        String decryptedStr = rsa.decryptBase64(encryptedStr);
+        System.out.println("decryptedStr => " + decryptedStr);
         
         SysUtils.setVerbose(false);
 
