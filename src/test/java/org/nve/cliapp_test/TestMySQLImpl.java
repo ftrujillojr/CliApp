@@ -8,10 +8,7 @@ import java.util.Map;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.nve.cliapp.MySqlBuild;
-import org.nve.cliapp.exceptions.MySqlBuildException;
 import org.nve.cliapp.interfaces.MySQLImpl;
 import org.nve.cliapp.utils.RegExp;
 //import org.junit.Ignore;
@@ -185,22 +182,6 @@ public class TestMySQLImpl {
         
         mySQLImpl.executeUpdate("DROP TABLE IF EXISTS `tmpuser`.`Person`;");
         
-    }
-
-    @Test
-    public void mysqlbuild() throws MySqlBuildException {
-        MySqlBuild mySqlBuild = new MySqlBuild();
-
-        System.out.println(
-                mySqlBuild.SELECT(new String[]{
-                    "first_name",
-                    "last_name",
-                    "age",
-                }).FROM(new String[] {
-                    "Person AS p"
-                }).toString()
-        );
-
     }
 
 }
