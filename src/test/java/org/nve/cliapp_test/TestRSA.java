@@ -2,7 +2,9 @@ package org.nve.cliapp_test;
 
 // junit.framework.Test package is the legacy namespace used with Junit v3 and older versions of Java that do not support annotations.
 // org.junit.Test is the new namespace used by JUnit v4 and requires Java v1.5 or later for its annotations.
+import java.nio.file.Paths;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nve.cliapp.RSA;
@@ -109,19 +111,16 @@ public class TestRSA {
      */
     @Test
     public void testRSA() throws SysUtilsException, RSAException {
-        SysUtils.setVerbose(true);
+        RSA rsa = new RSA(SysUtils.getTmpDir(), "testRSA",  1024);
+        //rsa.setDebug(true);
 
-//        RSA rsa = new RSA(Paths.get(SysUtils.getTmpDir(), "testRSA").toString(), "CliApp", 1024);
-        RSA rsa = new RSA();
-        
-        String encryptedStr = rsa.encryptBase64("Hello World");
-        System.out.println("encryptedStr.length() " + encryptedStr.length());
-        System.out.println("encryptedStr => " + encryptedStr);
+        String expectedStr = "Hello World. Mary had a little lamb, whose fleece was as white as snow.  Everywhere Mary went, the lamb was sure to go. This string should be over 117 characters to test block cypher.";
+        String encryptedStr = rsa.encryptBase64(expectedStr);
         String decryptedStr = rsa.decryptBase64(encryptedStr);
-        System.out.println("decryptedStr => " + decryptedStr);
         
-        SysUtils.setVerbose(false);
-
+        Assert.assertEquals(expectedStr, decryptedStr);
+        
+        SysUtils.rmDirTree(Paths.get(SysUtils.getTmpDir(), "testRSA").toString());
     }
 
     private void exampleByteCopyBuffer() {

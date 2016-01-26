@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -25,6 +26,7 @@ import java.util.Base64.Encoder;
 import java.util.Base64.Decoder;
 import java.util.Base64;
 import org.nve.cliapp.exceptions.RSAException;
+import org.nve.cliapp.utils.SysUtils;
 
 public final class RSA {
 
@@ -33,65 +35,47 @@ public final class RSA {
     private String publicKey;
     private int numBitsEncryption;
     private Cipher cipher;
-    private int debug;
+    private boolean debug;
 
-    public RSA() {
+    public RSA(String dirName, String projectName, int numBits) {
         this.algorithm = "RSA";
-        this.privateKey = "keys/private.key";
-        this.publicKey = "keys/public.key";
-        this.numBitsEncryption = 1024;  // do not change this or blockCipher is invalid.
+        this.privateKey = Paths.get(dirName, projectName, "private.key").toString();
+        this.publicKey = Paths.get(dirName, projectName, "public.key").toString();
+        this.numBitsEncryption = numBits; 
         this.cipher = null;
-        this.debug = 0;
+        this.debug = false;
 
         if (this.areKeysPresent() == false) {
             this.generateKey();
         }
     }
 
-    public RSA(int debug) {
-        this.algorithm = "RSA";
-        this.privateKey = "keys/private.key";
-        this.publicKey = "keys/public.key";
-        this.numBitsEncryption = 1024;  // do not change this or blockCipher is invalid.
-        this.cipher = null;
+    public void setDebug(boolean debug) {
         this.debug = debug;
-
-        if (this.areKeysPresent() == false) {
-            this.generateKey();
-        }
     }
+
+    
     /**
-     * This will allow you to use different paths to public and private key
-     * files.
+     * The method checks if the pair of public and private key has been
+     * generated.
      *
-     * @param privateKeyFileName
-     * @param publicKeyFileName
+     * @return flag indicating if the pair of keys were generated.
      */
-    public RSA(String privateKeyFileName, String publicKeyFileName) {
-        this.algorithm = "RSA";
-        this.privateKey = privateKeyFileName;
-        this.publicKey = publicKeyFileName;
-        this.numBitsEncryption = 1024;  // do not change this or blockCipher is invalid.
-        this.cipher = null;
-        this.debug = 0;
+    public boolean areKeysPresent() {
 
-        if (this.areKeysPresent() == false) {
-            this.generateKey();
+        File privateKeyFile = new File(this.privateKey);
+        File publicKeyFile = new File(this.publicKey);
+
+        if (privateKeyFile.exists() && publicKeyFile.exists()) {
+            if (this.debug) {
+                System.out.println("DEBUG: Using keys from " + this.privateKey + "  " + this.publicKey);
+            }
+
+            return true;
         }
+        return false;
     }
-
-    public int getDebug() {
-        return debug;
-    }
-
-    public void setDebug(int debug) {
-        this.debug = debug;
-    }
-
-    public void clrDebug() {
-        this.debug = 0;
-    }
-
+    
     /**
      *
      * @param plainText
@@ -100,6 +84,9 @@ public final class RSA {
      */
     public String encryptBase64(String plainText) throws RSAException {
         String base64EncodedString = "";
+        if (this.debug) {
+            System.out.println("DEBUG: RSA.encryptBase64() length:" + plainText.length() + " before " + plainText);
+        }
 
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(this.publicKey))) {
             PublicKey publicKeyObj = (PublicKey) inputStream.readObject();
@@ -115,12 +102,18 @@ public final class RSA {
             throw new RSAException(msg);
         }
 
+        if (this.debug) {
+            System.out.println("DEBUG: RSA.encryptBase64() length:" + base64EncodedString.length() + "  after " + base64EncodedString);
+        }
         return (base64EncodedString);
     }
 
     public String decryptBase64(String encText) throws RSAException {
         String plainText = null;
 
+        if (this.debug) {
+            System.out.println("DEBUG: RSA.decryptBase64() length:" + encText.length() + " before " + encText);
+        }
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(this.privateKey))) {
             // Java 1.7 and older, you must use external library to do Base64.decode.  Apache.
             //byte[] decodedText = Base64.decodeBase64(encText);
@@ -130,32 +123,14 @@ public final class RSA {
             plainText = this.decrypt(decodedText, privateKeyObj);
         } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
             Logger.getLogger(RSA.class.getName()).log(Level.SEVERE, null, ex);
-            String msg = "\nERROR: Failed to encryptBase64(String plainText)";
+            String msg = "\nERROR: Failed to decryptBase64(String plainText)";
             throw new RSAException(msg);
         }
-
-        return (this.rtrimZeros(plainText));
-    }
-
-    private String rtrimZeros(String plainText) {
-        String tmp = null;
-        byte[] bytes = plainText.getBytes();
-        int ii = plainText.lastIndexOf(0);  // start at the end of the string
-
-        while (ii >= 0) {                   // terminate at -1 if not found
-            if (bytes[ii] != 0) {            // when we see a non-ZERO then break.
-                break;
-            }
-            ii--;                           // check next index.
+        
+        if (this.debug) {
+            System.out.println("DEBUG: RSA.decryptBase64() length:" + plainText.length() + "  after " + plainText);
         }
-
-        if (ii >= 0) {                          //  we found ZEROS
-            tmp = plainText.substring(0, ii + 1); // return rtrim String
-        } else {
-            tmp = plainText;                   // don't allocate memory
-        }
-
-        return (tmp);
+        return (plainText);
     }
 
     /**
@@ -164,6 +139,9 @@ public final class RSA {
      */
     private void generateKey() {
         try {
+            if (this.debug) {
+                System.err.println("DEBUG: RSA.generateKey()");
+            }
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance(this.algorithm);
             keyGen.initialize(this.numBitsEncryption);
             KeyPair keyPair = keyGen.generateKeyPair();
@@ -194,22 +172,6 @@ public final class RSA {
         }
     }
 
-    /**
-     * The method checks if the pair of public and private key has been
-     * generated.
-     *
-     * @return flag indicating if the pair of keys were generated.
-     */
-    private boolean areKeysPresent() {
-
-        File privateKeyFile = new File(this.privateKey);
-        File publicKeyFile = new File(this.publicKey);
-
-        if (privateKeyFile.exists() && publicKeyFile.exists()) {
-            return true;
-        }
-        return false;
-    }
 
     /**
      * Encrypt the plain text using public key.
@@ -276,7 +238,6 @@ public final class RSA {
         return decryptedStr;
     }
 
-    
     private byte[] blockCipher(byte[] bytes, int mode) throws IllegalBlockSizeException, BadPaddingException {
         //System.out.println("blockCipher() " + mode);
         // string initialize 2 buffers.
@@ -321,6 +282,16 @@ public final class RSA {
 
         // final step before we can return the modified data.
         toReturn = append(toReturn, scrambled);
+
+        if (this.debug) {
+            if(mode == Cipher.ENCRYPT_MODE) {
+                System.out.println("ENCRYPT_MODE");
+            } else {
+                System.out.println("DECRYPT_MODE");
+            }
+            SysUtils.displayHexDump(toReturn);
+            System.out.println("=============================================");
+        }
 
         return toReturn;
     }
