@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.Map;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nve.cliapp.MySQLImpl;
+import org.nve.cliapp.utils.JsonUtils;
 import org.nve.cliapp.utils.RegExp;
 //import org.junit.Ignore;
 
@@ -170,15 +172,17 @@ public class TestMySQLImpl {
             mySQLImpl.displayArrayListOfMaps(results);
             System.out.println("===========================");
             mySQLImpl.displayCSV(results);
-        } else {
-            //mySQLImpl.displayArrayListOfMaps(results);
-        }
-
+        } 
+        
         assertEquals(4, results.size());
 
         String jsonResults = mySQLImpl.executeQueryToJson(sqlString);
 
         System.out.println("JSON RESULTS\n" + jsonResults);
+        
+        boolean isValidJson = JsonUtils.isValidJson(jsonResults);
+        
+        assertTrue(isValidJson);
         
         mySQLImpl.executeUpdate("DROP TABLE IF EXISTS `tmpuser`.`Person`;");
         
