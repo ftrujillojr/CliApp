@@ -1,6 +1,7 @@
-package org.nve.cliapp.interfaces;
+package org.nve.cliapp;
 
 import java.sql.SQLException;
+import org.nve.cliapp.interfaces.MyDBAbstract;
 
 public class MySQLImpl extends MyDBAbstract {
 

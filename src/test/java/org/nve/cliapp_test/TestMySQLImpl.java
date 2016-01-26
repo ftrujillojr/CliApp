@@ -9,7 +9,7 @@ import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.nve.cliapp.interfaces.MySQLImpl;
+import org.nve.cliapp.MySQLImpl;
 import org.nve.cliapp.utils.RegExp;
 //import org.junit.Ignore;
 
