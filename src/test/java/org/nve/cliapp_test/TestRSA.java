@@ -114,7 +114,8 @@ public class TestRSA {
 //        RSA rsa = new RSA(Paths.get(SysUtils.getTmpDir(), "testRSA").toString(), "CliApp", 1024);
         RSA rsa = new RSA();
         
-        String encryptedStr = rsa.encryptBase64("Hello");
+        String encryptedStr = rsa.encryptBase64("Hello World");
+        System.out.println("encryptedStr.length() " + encryptedStr.length());
         System.out.println("encryptedStr => " + encryptedStr);
         String decryptedStr = rsa.decryptBase64(encryptedStr);
         System.out.println("decryptedStr => " + decryptedStr);

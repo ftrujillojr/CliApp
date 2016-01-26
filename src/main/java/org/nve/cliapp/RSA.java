@@ -46,7 +46,6 @@ public final class RSA {
         if (this.areKeysPresent() == false) {
             this.generateKey();
         }
-        //this.myrsa();
     }
 
     public RSA(int debug) {
@@ -60,7 +59,6 @@ public final class RSA {
         if (this.areKeysPresent() == false) {
             this.generateKey();
         }
-        //this.myrsa();
     }
     /**
      * This will allow you to use different paths to public and private key
@@ -106,8 +104,9 @@ public final class RSA {
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(this.publicKey))) {
             PublicKey publicKeyObj = (PublicKey) inputStream.readObject();
             byte[] cipherText = this.encrypt(plainText, publicKeyObj);
+            // Java 1.7 and older do not have Base64.encode.  Need Apache 3rd party.
             //base64EncodedString = Base64.encodeBase64String(cipherText);
-            Encoder encoder = Base64.getEncoder();
+            Encoder encoder = Base64.getEncoder(); // Java 1.8 ships with this now.
             base64EncodedString = encoder.encodeToString(cipherText);
         } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
             Logger.getLogger(RSA.class.getName()).log(Level.SEVERE, null, ex);
@@ -123,8 +122,9 @@ public final class RSA {
         String plainText = null;
 
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(this.privateKey))) {
-//            byte[] decodedText = Base64.decodeBase64(encText);
-            Decoder decoder = Base64.getDecoder();
+            // Java 1.7 and older, you must use external library to do Base64.decode.  Apache.
+            //byte[] decodedText = Base64.decodeBase64(encText);
+            Decoder decoder = Base64.getDecoder();  // Java 1.8 ships with this now.
             byte[] decodedText = decoder.decode(encText);
             PrivateKey privateKeyObj = (PrivateKey) inputStream.readObject();
             plainText = this.decrypt(decodedText, privateKeyObj);
@@ -243,6 +243,40 @@ public final class RSA {
         return cipherText;
     }
 
+    /**
+     * Decrypt text using private key.
+     *
+     * @param text :encrypted text
+     * @param key :The private key
+     * @return plain text
+     * @throws java.security.NoSuchAlgorithmException
+     * @throws javax.crypto.NoSuchPaddingException
+     * @throws java.security.InvalidKeyException
+     * @throws javax.crypto.IllegalBlockSizeException
+     * @throws javax.crypto.BadPaddingException
+     */
+    private String decrypt(byte[] text, PrivateKey privateKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        String decryptedStr = "";
+        try {
+            // get an RSA cipher object and print the provider
+            this.cipher = Cipher.getInstance(this.algorithm);
+
+            // decrypt the text using the private key
+            this.cipher.init(Cipher.DECRYPT_MODE, privateKey);
+
+            byte[] decryptedBytes = blockCipher(text, Cipher.DECRYPT_MODE);
+            decryptedStr = new String(decryptedBytes, "UTF-8");
+
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
+            throw ex;
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(RSA.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return decryptedStr;
+    }
+
+    
     private byte[] blockCipher(byte[] bytes, int mode) throws IllegalBlockSizeException, BadPaddingException {
         //System.out.println("blockCipher() " + mode);
         // string initialize 2 buffers.
@@ -254,6 +288,7 @@ public final class RSA {
         // if we encrypt we use 100 byte long blocks. Decryption requires 128 byte long blocks (because of RSA)
         // This keeps us below 117 byte blow up point.
         int length = (mode == Cipher.ENCRYPT_MODE) ? 100 : 128;
+        //System.out.println("Choosing buffer length: " + length);
 
         // another buffer. this one will hold the bytes that have to be modified in this step
         byte[] buffer = new byte[length];
@@ -302,36 +337,4 @@ public final class RSA {
         return toReturn;
     }
 
-    /**
-     * Decrypt text using private key.
-     *
-     * @param text :encrypted text
-     * @param key :The private key
-     * @return plain text
-     * @throws java.security.NoSuchAlgorithmException
-     * @throws javax.crypto.NoSuchPaddingException
-     * @throws java.security.InvalidKeyException
-     * @throws javax.crypto.IllegalBlockSizeException
-     * @throws javax.crypto.BadPaddingException
-     */
-    private String decrypt(byte[] text, PrivateKey privateKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        String decryptedStr = "";
-        try {
-            // get an RSA cipher object and print the provider
-            this.cipher = Cipher.getInstance(this.algorithm);
-
-            // decrypt the text using the private key
-            this.cipher.init(Cipher.DECRYPT_MODE, privateKey);
-
-            byte[] decryptedBytes = blockCipher(text, Cipher.DECRYPT_MODE);
-            decryptedStr = new String(decryptedBytes, "UTF-8");
-
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
-            throw ex;
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(RSA.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return decryptedStr;
-    }
 }
