@@ -48,7 +48,7 @@ public class SHAUtils {
     private static final int ITERATIONS = 100211; // for PBKDF2.  keep this number HIGH
     private static final int KEY_LENGTH = 512; // bits for PBKDF2
     // use SHAUtils.generateSalt() to get a new PEPPER value and then REplace in here to allow your usage to not be crackable by this string.
-    private static final String PEPPER = "r5zob55OCerlFwGXU3F4aSlIVYQef349KqMmGOjyMQ92aUIrBhecw7anBHwJypHmPa9mKR3q3A+OiT34mrfZeg=="; // for PBKDF2
+    private static final String PEPPER = "r5zob55OCerlFwGXU3F4aSlIVYQef349KqMmGOjyMQ92aUIrBhecw7anBHwJypHmPa9mKR3q3A+OiT34mrfZeg=="; // for all hashing.
 
     public SHAUtils() {
     }
