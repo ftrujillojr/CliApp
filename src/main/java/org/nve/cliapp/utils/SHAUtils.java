@@ -36,11 +36,12 @@ import javax.crypto.spec.PBEKeySpec;
  */
 public class SHAUtils {
 
+    private static final int ITERATIONS = 1520;
+    private static final int KEY_LENGTH = 512; // bits
 
     public SHAUtils() {
     }
     // http://www.mkyong.com/java/java-sha-hashing-example/
-
 
 //    public static String getSHA256ForFile(String fileName) throws FileNotFoundException, IOException {
 //        StringBuilder hexString = new StringBuilder();
@@ -126,103 +127,105 @@ public class SHAUtils {
 //
 //        return (hexString.toString());
 //    }
-
-    public static String getSHA256HashWithSalt(String myString, String salt) {
+    public static String generateSHA256Hash(String myString) {
         StringBuilder sb = new StringBuilder();
-
+        
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             md.reset();
-            byte[] ba = SHAUtils.base64StringToByteArray(salt);
-            md.update(ba);
+            String salt = SHAUtils.generateSalt();
+            byte[] saltByteArray = SHAUtils.base64StringToByteArray(salt);
+            md.update(saltByteArray);
             byte byteData[] = md.digest(myString.getBytes());
-            //convert the byte to hex format method 2
-            for (int i = 0; i < byteData.length; i++) {
-                sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
-            }
-            
+//            //convert the byte to hex format method 2
+//            for (int i = 0; i < byteData.length; i++) {
+//                sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+//            }
+            sb.append(salt).append(":").append(SHAUtils.byteArrayToBase64String(byteData));
+
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(SHAUtils.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
 
         return (sb.toString());
     }
-    
+
     // http://howtodoinjava.com/optimization/how-to-generate-secure-password-hash-md5-sha-pbkdf2-bcrypt-examples/
-    
-    public static String generateStrongPasswordHash(String password) throws NoSuchAlgorithmException, InvalidKeySpecException
-    {
-        int iterations = 10000;
+    /**
+     * Use this one for hashing passwords.
+     * 
+     * @param password
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException 
+     */
+    public static String generatePBKDF2Hash(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
         char[] chars = password.toCharArray();
-        byte[] saltByteArray = SHAUtils.base64StringToByteArray(SHAUtils.generateSalt());
-         
-        PBEKeySpec spec = new PBEKeySpec(chars, saltByteArray, iterations, 64 * 8);
-        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+        String salt = SHAUtils.generateSalt();
+        byte[] saltByteArray = SHAUtils.base64StringToByteArray(salt);
+
+        PBEKeySpec spec = new PBEKeySpec(chars, saltByteArray, ITERATIONS, KEY_LENGTH);
+        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
         byte[] hash = skf.generateSecret(spec).getEncoded();
-        return iterations + ":" + toHex(saltByteArray) + ":" + toHex(hash);
+        
+        return salt + ":" + SHAUtils.byteArrayToBase64String(hash);
     }
-    
-    public static boolean validatePassword(String originalPassword, String storedPassword) throws NoSuchAlgorithmException, InvalidKeySpecException
-    {
-        String[] parts = storedPassword.split(":");
-        int iterations = Integer.parseInt(parts[0]);
-        byte[] salt = fromHex(parts[1]);
-        byte[] hash = fromHex(parts[2]);
-         
-        PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(), salt, iterations, hash.length * 8);
-        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+
+    public static boolean validatePBKDF2(String originalPassword, String pbkdf2Hash) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        String[] parts = pbkdf2Hash.split(":");
+        byte[] salt = SHAUtils.base64StringToByteArray(parts[0]);
+        byte[] hash = SHAUtils.base64StringToByteArray(parts[1]);
+        
+        PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(), salt, ITERATIONS, KEY_LENGTH);
+        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
         byte[] testHash = skf.generateSecret(spec).getEncoded();
-         
+
         int diff = hash.length ^ testHash.length;
-        for(int i = 0; i < hash.length && i < testHash.length; i++)
-        {
+        for (int i = 0; i < hash.length && i < testHash.length; i++) {
             diff |= hash[i] ^ testHash[i];
         }
         return diff == 0;
     }
-    
-    private static String toHex(byte[] array) throws NoSuchAlgorithmException
-    {
-        BigInteger bi = new BigInteger(1, array);
-        String hex = bi.toString(16);
-        int paddingLength = (array.length * 2) - hex.length();
-        if(paddingLength > 0)
-        {
-            return String.format("%0"  +paddingLength + "d", 0) + hex;
-        }else{
-            return hex;
-        }
-    }
-    
-    private static byte[] fromHex(String hex) throws NoSuchAlgorithmException
-    {
-        byte[] bytes = new byte[hex.length() / 2];
-        for(int i = 0; i<bytes.length ;i++)
-        {
-            bytes[i] = (byte)Integer.parseInt(hex.substring(2 * i, 2 * i + 2), 16);
-        }
-        return bytes;
-    }
 
+    
     public static String generateSalt() {
         Random random = new SecureRandom();
-        byte[] bytes = new byte[32];
+        byte[] bytes = new byte[64];
         random.nextBytes(bytes);
         return SHAUtils.byteArrayToBase64String(bytes);
     }
-    
+
     private static String byteArrayToBase64String(byte[] byteArray) {
-        // Java 1.7 and older do not have Base64.encode.  Need Apache 3rd party.
-        //String base64EncodedString = Base64.encodeBase64String(byteArray);
         Base64.Encoder encoder = Base64.getEncoder(); // Java 1.8 ships with this now.
         String base64EncodedString = encoder.encodeToString(byteArray);
-        return(base64EncodedString);
+        return (base64EncodedString);
     }
-    
+
     private static byte[] base64StringToByteArray(String myStr) {
         Base64.Decoder decoder = Base64.getDecoder(); // Java 1.8 ships with this now.
         byte[] byteArray = decoder.decode(myStr);
-        return(byteArray);
+        return (byteArray);
     }
+    
+//    private static String toHex(byte[] array) throws NoSuchAlgorithmException {
+//        BigInteger bi = new BigInteger(1, array);
+//        String hex = bi.toString(16);
+//        int paddingLength = (array.length * 2) - hex.length();
+//        if (paddingLength > 0) {
+//            return String.format("%0" + paddingLength + "d", 0) + hex;
+//        } else {
+//            return hex;
+//        }
+//    }
+//
+//    private static byte[] fromHex(String hex) throws NoSuchAlgorithmException {
+//        byte[] bytes = new byte[hex.length() / 2];
+//        for (int i = 0; i < bytes.length; i++) {
+//            bytes[i] = (byte) Integer.parseInt(hex.substring(2 * i, 2 * i + 2), 16);
+//        }
+//        return bytes;
+//    }
+
 
 }

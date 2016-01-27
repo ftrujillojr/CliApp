@@ -75,6 +75,8 @@ import org.nve.cliapp.utils.SysUtils;
  * </pre>
  */
 public class TestSHAUtils {
+    private static String someShortPassword;
+    private static String someLongPassword;
 
     /**
      * Do not use the constructor to set up a test case. Use setupClass() method
@@ -93,6 +95,8 @@ public class TestSHAUtils {
      */
     @BeforeClass
     public static void setUpClass() {
+        someShortPassword = "Hello123World";
+        someLongPassword = "Hello World This is a very long password with 1204-F6^%";
     }
 
     /**
@@ -113,42 +117,29 @@ public class TestSHAUtils {
      */
     @Test
     public void testGetSHA256ForFile() throws IOException {
-//        String salt = SHAUtils.generateSalt();
-        String salt = "4wFKHJ6YHpcFtyPjVqxt1CZ/ml5xA22AVI9PqYKjGYM=";
-        String myString = "Hello World This is a very long password with 1204-F6^%";
-        String sha256Str = SHAUtils.getSHA256HashWithSalt(myString, salt);
-        String expectData = "224a2d453be6c107a6b0e8619ee1faee1e0bc2a697aab01aa99065b22438740b";
+        String sha256Hash = SHAUtils.generateSHA256Hash(someShortPassword);
+        System.out.println("SHA256 Hash => " + sha256Hash);
         
-
-        if (expectData.equals(sha256Str) == false) {
-            System.out.println("SALT   => " + salt);
-            System.out.println("Expect => " + expectData);
-            System.out.println("Actual => " + sha256Str);
-            System.out.println("===============");
-            
-        }
-
-        assertEquals(expectData, sha256Str);
+        
     }
     
     @Test
-    public void testGenerateStrongPasswordHash() throws NoSuchAlgorithmException, InvalidKeySpecException {
-        String myString = "Hello World This is a very long password with 1204-F6^%";
-        String strongHash = SHAUtils.generateStrongPasswordHash(myString);
-        System.out.println("Strong hash => " + strongHash);
+    public void testGeneratePBKDF2Hash() throws NoSuchAlgorithmException, InvalidKeySpecException {
+        String pbkdf2Hash = SHAUtils.generatePBKDF2Hash(someShortPassword);
+        System.out.println("PBKDF2 Hash => " + pbkdf2Hash);
         
-        boolean isValid = SHAUtils.validatePassword("Hello World This is a very long password with 1204-F6^%", strongHash);
+        boolean isValid = SHAUtils.validatePBKDF2(someShortPassword, pbkdf2Hash);
         if(isValid == false) {
-            System.out.println("NO MATCH");
+            System.out.println("NO MATCH - this should have matched.");
         }
         
         assertTrue(isValid);
 
         // I just changed the first character to lowercase.
-        isValid = SHAUtils.validatePassword("hello World This is a very long password with 1204-F6^%", strongHash);
+        isValid = SHAUtils.validatePBKDF2("hello World This is a very long password with 1204-F6^%", pbkdf2Hash);
         
-        if(isValid == true) {  // This one should be invalid
-            System.out.println("MATCH");
+        if(isValid == true) {  
+            System.out.println("MATCH - this one should be invalid.");
         } 
         assertFalse(isValid);
     }
