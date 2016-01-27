@@ -170,6 +170,15 @@ public class SHAUtils {
         return salt + ":" + SHAUtils.byteArrayToBase64String(hash);
     }
 
+    /**
+     * Use this method to validate a password with a known salt+pbkdf2Hash.
+     * 
+     * @param originalPassword
+     * @param pbkdf2Hash
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException 
+     */
     public static boolean validatePBKDF2(String originalPassword, String pbkdf2Hash) throws NoSuchAlgorithmException, InvalidKeySpecException {
         String[] parts = pbkdf2Hash.split(":");
         byte[] saltByteArray = SHAUtils.base64StringToByteArray(parts[0]);
@@ -257,6 +266,7 @@ public class SHAUtils {
 
     /**
      * This method will take an input byte[] (salt) and then pepper it up; return new byte[]
+     * I know the data is USUALLY peppered, but so can the salt.
      * 
      * @param saltByteArray
      * @return  byte[]
