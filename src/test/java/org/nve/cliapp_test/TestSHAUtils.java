@@ -134,7 +134,7 @@ public class TestSHAUtils {
     @Test
     public void testGenerateSHA512HashForFile() throws IOException {
         String sha512Hash = SHAUtils.generateSHA512HashForFile(filename);
-        System.out.println("SHA512 Hash for File => " + sha512Hash + "   File: " + filename);
+        //System.out.println("SHA512 Hash for File => " + sha512Hash + "   File: " + filename);
 
         boolean isValid = SHAUtils.validateSHA512ForFile(filename, sha512Hash);
         if (isValid == false) {
@@ -143,7 +143,7 @@ public class TestSHAUtils {
 
         assertTrue(isValid);
 
-        System.out.println("HEX => " + SHAUtils.hashToHex(sha512Hash));
+        //System.out.println("HEX => " + SHAUtils.hashToHex(sha512Hash));
     }
 
     @Test

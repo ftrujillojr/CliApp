@@ -40,13 +40,25 @@ import javax.crypto.spec.PBEKeySpec;
  */
 public class SHAUtils {
 
-    private static final int ITERATIONS = 10201; // for PBKDF2.  keep this number HIGH
+    // 10k => 0.265s   
+    // 20k -> 0.321s  
+    // 50k => 0.582s  
+    // 80k => 0.773  
+    // 100k => 0.892
+    private static final int ITERATIONS = 100211; // for PBKDF2.  keep this number HIGH
     private static final int KEY_LENGTH = 512; // bits for PBKDF2
+    // use SHAUtils.generateSalt() to get a new PEPPER value and then REplace in here to allow your usage to not be crackable by this string.
     private static final String PEPPER = "r5zob55OCerlFwGXU3F4aSlIVYQef349KqMmGOjyMQ92aUIrBhecw7anBHwJypHmPa9mKR3q3A+OiT34mrfZeg=="; // for PBKDF2
 
     public SHAUtils() {
     }
     
+    /**
+     * Base64:Base64 string to HEX string for any of the generated Hashes below.
+     * 
+     * @param hashStr
+     * @return 
+     */
     public static String hashToHex(String hashStr) {
         StringBuilder sb = new StringBuilder();
         
@@ -57,8 +69,15 @@ public class SHAUtils {
         return(sb.toString());
     }
     
-    // http://www.mkyong.com/java/java-sha-hashing-example/
 
+    /**
+     * Generate a SHA256 Hash for a file.
+     * 
+     * @param fileName
+     * @return
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
     public static String generateSHA256HashForFile(String fileName) throws FileNotFoundException, IOException {
         StringBuilder sb = new StringBuilder();
 
@@ -84,6 +103,15 @@ public class SHAUtils {
         return (sb.toString());
     }
 
+    /**
+     * Validate a file to a known sha256hash.
+     * 
+     * @param fileName
+     * @param sha256Hash
+     * @return
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
     public static boolean validateSHA256ForFile(String fileName, String sha256Hash) throws FileNotFoundException, IOException {
         boolean isValid = false;
         String[] parts = sha256Hash.split(":");
@@ -111,6 +139,14 @@ public class SHAUtils {
         return isValid;
     }
 
+    /**
+     * Generate SHA512 for a File.
+     * 
+     * @param fileName
+     * @return
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
     public static String generateSHA512HashForFile(String fileName) throws FileNotFoundException, IOException {
         StringBuilder sb = new StringBuilder();
 
@@ -136,6 +172,15 @@ public class SHAUtils {
         return (sb.toString());
     }
 
+    /**
+     * Validate hash from a File matches known sha512Hash.
+     * 
+     * @param fileName
+     * @param sha512Hash
+     * @return
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
     public static boolean validateSHA512ForFile(String fileName, String sha512Hash) throws FileNotFoundException, IOException {
         boolean isValid = false;
         String[] parts = sha512Hash.split(":");
@@ -164,6 +209,11 @@ public class SHAUtils {
     }
 
 
+    /**
+     * DO NOT USE THIS METHOD to store passwords in database.  (see generatePBKDF2Hash)
+     * @param myString
+     * @return 
+     */
     public static String generateSHA256Hash(String myString) {
         StringBuilder sb = new StringBuilder();
 
@@ -183,6 +233,12 @@ public class SHAUtils {
         return (sb.toString());
     }
 
+    /**
+     * 
+     * @param originalStr
+     * @param sha256Hash
+     * @return 
+     */
     public static boolean validateSHA256(String originalStr, String sha256Hash) {
         String[] parts = sha256Hash.split(":");
         boolean isValid = false;
@@ -205,6 +261,12 @@ public class SHAUtils {
         return isValid;
     }
 
+    /**
+     * DO NOT USE THIS METHOD to store passwords in database.  (see generatePBKDF2Hash)
+     * 
+     * @param myString
+     * @return 
+     */
     public static String generateSHA512Hash(String myString) {
         StringBuilder sb = new StringBuilder();
 
@@ -224,8 +286,14 @@ public class SHAUtils {
         return (sb.toString());
     }
 
-    public static boolean validateSHA512(String originalStr, String sha256Hash) {
-        String[] parts = sha256Hash.split(":");
+    /**
+     * Given a string and a pre-generated 
+     * @param originalStr
+     * @param sha512Hash
+     * @return 
+     */
+    public static boolean validateSHA512(String originalStr, String sha512Hash) {
+        String[] parts = sha512Hash.split(":");
         boolean isValid = false;
 
         try {
