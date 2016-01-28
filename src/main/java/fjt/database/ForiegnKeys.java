@@ -1,6 +1,6 @@
 package fjt.database;
 
-public class FKeys {
+public class ForiegnKeys {
 
     private String tableName;
     private String fkTableName;

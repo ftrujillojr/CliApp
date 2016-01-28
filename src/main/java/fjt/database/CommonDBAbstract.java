@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import fjt.database.FKeys;
+import fjt.database.ForiegnKeys;
 import fjt.interfaces.CommonDBInterface;
 import fjt.utils.JsonUtils;
 
@@ -353,7 +353,15 @@ public abstract class CommonDBAbstract implements CommonDBInterface {
         return (resultsArray);
     }
 
-    protected String getPrimaryKeyColumnForTable(String tableName) throws SQLException {
+    /**
+     * For a given tableName, return the PRIMARY_KEY columnName.
+     * 
+     * @param tableName
+     * @return PRIMARY_KEY columnName
+     * @throws SQLException 
+     */
+    @Override
+    public String getPrimaryKeyColumnForTable(String tableName) throws SQLException {
         DatabaseMetaData dbMetaData = this.connection.getMetaData();
         ResultSet resultSet = dbMetaData.getPrimaryKeys(null, null, tableName);
         String priKey = "";
@@ -364,13 +372,21 @@ public abstract class CommonDBAbstract implements CommonDBInterface {
         return priKey;
     }
 
-    protected List<FKeys> getForiegnKeysColumnsForTable(String tableName) throws SQLException {
+    /**
+     * For a given tableName, return a List of ForiegnKeys.
+     * 
+     * @param tableName
+     * @return List of ForiegnKeys
+     * @throws SQLException 
+     */
+    @Override
+    public List<ForiegnKeys> getForiegnKeysColumnsForTable(String tableName) throws SQLException {
         DatabaseMetaData dbMetaData = this.connection.getMetaData();
         ResultSet resultSet = dbMetaData.getImportedKeys(null, null, tableName);
-        List<FKeys> foriegnKeysList = new ArrayList<>();
+        List<ForiegnKeys> foriegnKeysList = new ArrayList<>();
         
         while (resultSet.next()) {
-            FKeys fkeys = new FKeys();
+            ForiegnKeys fkeys = new ForiegnKeys();
             fkeys.setTableName(tableName);
             fkeys.setFkTableName(resultSet.getString("FKTABLE_NAME"));
             fkeys.setFkColumnName(resultSet.getString("FKCOLUMN_NAME"));
@@ -392,7 +408,7 @@ public abstract class CommonDBAbstract implements CommonDBInterface {
             String columnName = rsmd.getColumnName(colNo);
             String tableName = rsmd.getTableName(colNo);
             String priKey = this.getPrimaryKeyColumnForTable(tableName);
-            List<FKeys> foriegnKeysList = this.getForiegnKeysColumnsForTable(tableName);
+            List<ForiegnKeys> foriegnKeysList = this.getForiegnKeysColumnsForTable(tableName);
             
             int displaySize = rsmd.getColumnDisplaySize(colNo);
 

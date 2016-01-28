@@ -97,7 +97,7 @@ public class TestSHAUtils {
     public static void setUpClass() {
         someShortPassword = "Hello123World";
         someLongPassword = "Hello World This is a very long password with 1204-F6^% Mary had a little lamb whose fleece was as white as snow.  Everywhere Mary went the lamb was sure to go.";
-        filename = Paths.get("src", "main", "java", "org", "nve", "cliapp", "utils", "SHAUtils.java").toString();
+        filename = Paths.get("src", "main", "java", "fjt", "utils", "SHAUtils.java").toString();
     }
 
     /**
