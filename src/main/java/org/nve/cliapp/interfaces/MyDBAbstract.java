@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import java.sql.Array;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -19,6 +20,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.nve.cliapp.FKeys;
 import org.nve.cliapp.utils.JsonUtils;
 
 public abstract class MyDBAbstract implements MyDBInterface {
@@ -42,6 +44,35 @@ public abstract class MyDBAbstract implements MyDBInterface {
         this.subExps = new ArrayList<>();
 
         this.recordsMetaData = new ArrayList<>();
+    }
+
+    public boolean doesTableExist(String tableName) throws SQLException {
+        boolean found = false;
+
+        DatabaseMetaData dbMetaData = this.connection.getMetaData();
+        ResultSet resultSet = dbMetaData.getTables(null, null, "%", null);
+
+        while (resultSet.next()) {
+            String tmpStr = resultSet.getString("TABLE_NAME");
+            if (tableName.equals(tmpStr)) {
+                found = true;
+            }
+        }
+        //System.out.println("FOUND => " + ((found == true)?"TRUE":"FALSE"));
+        return (found);
+    }
+
+    public List<String> getTables() throws SQLException {
+
+        DatabaseMetaData dbMetaData = this.connection.getMetaData();
+        ResultSet resultSet = dbMetaData.getTables(null, null, "%", null);
+
+        List<String> tablesList = new ArrayList<>();
+        while (resultSet.next()) {
+            tablesList.add(resultSet.getString("TABLE_NAME"));
+        }
+
+        return tablesList;
     }
 
     /**
@@ -321,6 +352,33 @@ public abstract class MyDBAbstract implements MyDBInterface {
         return (resultsArray);
     }
 
+    protected String getPrimaryKeyColumnForTable(String tableName) throws SQLException {
+        DatabaseMetaData dbMetaData = this.connection.getMetaData();
+        ResultSet resultSet = dbMetaData.getPrimaryKeys(null, null, tableName);
+        String priKey = "";
+
+        while (resultSet.next()) {
+            priKey = resultSet.getString(4);
+        }
+        return priKey;
+    }
+
+    protected List<FKeys> getForiegnKeysColumnsForTable(String tableName) throws SQLException {
+        DatabaseMetaData dbMetaData = this.connection.getMetaData();
+        ResultSet resultSet = dbMetaData.getImportedKeys(null, null, tableName);
+        List<FKeys> foriegnKeysList = new ArrayList<>();
+        
+        while (resultSet.next()) {
+            FKeys fkeys = new FKeys();
+            fkeys.setTableName(tableName);
+            fkeys.setFkTableName(resultSet.getString("FKTABLE_NAME"));
+            fkeys.setFkColumnName(resultSet.getString("FKCOLUMN_NAME"));
+            fkeys.setFkKeySeq(resultSet.getInt("KEY_SEQ"));
+            foriegnKeysList.add(fkeys);
+        }
+        return foriegnKeysList;
+    }
+    
     // http://www.studytrails.com/java/json/java-google-json-java-to-json.jsp
     protected String convertResultSet2Json(ResultSet rs) throws SQLException {
         ResultSetMetaData rsmd = rs.getMetaData();
@@ -328,14 +386,27 @@ public abstract class MyDBAbstract implements MyDBInterface {
         Set<String> tableNameSet = new TreeSet<>();
 
         JsonObject columnNameTypesObject = new JsonObject();
+
         for (int colNo = 1; colNo <= columnCount; colNo++) {
+            String columnName = rsmd.getColumnName(colNo);
+            String tableName = rsmd.getTableName(colNo);
+            String priKey = this.getPrimaryKeyColumnForTable(tableName);
+            List<FKeys> foriegnKeysList = this.getForiegnKeysColumnsForTable(tableName);
+            
             int displaySize = rsmd.getColumnDisplaySize(colNo);
-            String nullable = (rsmd.isNullable(colNo) == ResultSetMetaData.columnNullable) ? " NULL" : " NOT NULL";
+
+            String nullable = (rsmd.isNullable(colNo) == ResultSetMetaData.columnNullable) ? " NULL" : " NOT_NULL";
             String columnTypeDef = rsmd.getColumnTypeName(colNo) + " " + displaySize + nullable;
+
             if (rsmd.isAutoIncrement(colNo)) {
                 columnTypeDef += " AUTO_INCREMENT";
             }
-            columnNameTypesObject.addProperty(rsmd.getColumnName(colNo), columnTypeDef);
+            
+            if(priKey.isEmpty() == false && priKey.equals(columnName)) {
+                columnTypeDef += " PRIMARY_KEY";
+            }
+            
+            columnNameTypesObject.addProperty(columnName, columnTypeDef);
         }
 
         JsonArray jsonRowsArray = new JsonArray();
@@ -347,7 +418,7 @@ public abstract class MyDBAbstract implements MyDBInterface {
                 String columnName = rsmd.getColumnName(colNo);
                 String columnValue = rs.getString(colNo);
                 String tableName = rsmd.getTableName(colNo);
-                
+
                 tableNameSet.add(tableName);
 
                 if (columnValue == null) {

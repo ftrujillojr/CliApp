@@ -8,11 +8,13 @@ import java.util.Map;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nve.cliapp.MySQLImpl;
 import org.nve.cliapp.utils.JsonUtils;
 import org.nve.cliapp.utils.RegExp;
+import org.nve.cliapp.utils.SysUtils;
 //import org.junit.Ignore;
 
 /*   ARRANGE    ACT    ASSERT
@@ -139,53 +141,62 @@ public class TestMySQLImpl {
         sb.append("ENGINE = InnoDB;").append("\n");
         mySQLImpl.executeUpdate(sb.toString());
 
-        String insPerson = "INSERT INTO\n"
-                + "   `tmpuser`.`Person`\n"
-                + "   ( `first_name`, `last_name`, `age`, `salary`, `is_student` )\n"
-                + "VALUES\n"
-                + "   (__REPLACE__);";
+        List<String> tablesList = mySQLImpl.getTables();
+        System.out.println("-------------------------------------------------");
+        SysUtils.displayList(tablesList);
+        System.out.println("-------------------------------------------------");
 
-        String[] rowsToInsert = {
-            "'Bugs', 'Bunny', 51, 8.50, 0",
-            "'Elmer', 'Fudd', 52, 19.00, 0",
-            "'Spongebob', 'Squarepants', 10, 1000.01, 1",
-            "'Patrick', 'Starfish', 12, 1.25, 1"
-        };
+        if (mySQLImpl.doesTableExist("Person")) {
+            String insPerson = "INSERT INTO\n"
+                    + "   `tmpuser`.`Person`\n"
+                    + "   ( `first_name`, `last_name`, `age`, `salary`, `is_student` )\n"
+                    + "VALUES\n"
+                    + "   (__REPLACE__);";
 
-        int numRows = 0;
-        for (int ii = 0; ii < rowsToInsert.length; ii++) {
-            String tmpStr = RegExp.replaceFirst("__REPLACE__", insPerson, rowsToInsert[ii]);
-            numRows += mySQLImpl.insertUpdateDelete(tmpStr);
+            String[] rowsToInsert = {
+                "'Bugs', 'Bunny', 51, 8.50, 0",
+                "'Elmer', 'Fudd', 52, 19.00, 0",
+                "'Spongebob', 'Squarepants', 10, 1000.01, 1",
+                "'Patrick', 'Starfish', 12, 1.25, 1"
+            };
+
+            int numRows = 0;
+            for (int ii = 0; ii < rowsToInsert.length; ii++) {
+                String tmpStr = RegExp.replaceFirst("__REPLACE__", insPerson, rowsToInsert[ii]);
+                numRows += mySQLImpl.insertUpdateDelete(tmpStr);
+            }
+
+            if (numRows != 4) {
+                System.out.println("ERROR:  Expected 4 Rows, Inserted " + numRows + " Rows");
+            }
+
+            assertEquals(4, numRows);
+
+            String sqlString = "SELECT * FROM Person;";
+            List<Map<String, String>> results = mySQLImpl.executeQuery(sqlString);
+
+            if (results.size() != 4) {
+                System.out.println("ERROR: Expected 4 Rows.  Returned " + results.size() + " Rows.\n");
+                mySQLImpl.displayArrayListOfMaps(results);
+                System.out.println("===========================");
+                mySQLImpl.displayCSV(results);
+            }
+
+            assertEquals(4, results.size());
+
+            String jsonResults = mySQLImpl.executeQueryToJson(sqlString);
+
+            System.out.println("JSON RESULTS\n" + jsonResults);
+
+            boolean isValidJson = JsonUtils.isValidJson(jsonResults);
+
+            assertTrue(isValidJson);
+
+            mySQLImpl.executeUpdate("DROP TABLE IF EXISTS `tmpuser`.`Person`;");
+        } else {
+            fail("Failed to CREATE table => Person");
         }
 
-        if (numRows != 4) {
-            System.out.println("ERROR:  Expected 4 Rows, Inserted " + numRows + " Rows");
-        }
-
-        assertEquals(4, numRows);
-
-        String sqlString = "SELECT * FROM Person;";
-        List<Map<String, String>> results = mySQLImpl.executeQuery(sqlString);
-
-        if (results.size() != 4) {
-            System.out.println("ERROR: Expected 4 Rows.  Returned " + results.size() + " Rows.\n");
-            mySQLImpl.displayArrayListOfMaps(results);
-            System.out.println("===========================");
-            mySQLImpl.displayCSV(results);
-        } 
-        
-        assertEquals(4, results.size());
-
-        String jsonResults = mySQLImpl.executeQueryToJson(sqlString);
-
-        System.out.println("JSON RESULTS\n" + jsonResults);
-        
-        boolean isValidJson = JsonUtils.isValidJson(jsonResults);
-        
-        assertTrue(isValidJson);
-        
-        mySQLImpl.executeUpdate("DROP TABLE IF EXISTS `tmpuser`.`Person`;");
-        
     }
 
 }
