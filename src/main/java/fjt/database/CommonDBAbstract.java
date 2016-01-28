@@ -24,7 +24,7 @@ import fjt.database.FKeys;
 import fjt.interfaces.CommonDBInterface;
 import fjt.utils.JsonUtils;
 
-public abstract class MyDBAbstract implements CommonDBInterface {
+public abstract class CommonDBAbstract implements CommonDBInterface {
 
     private final String host;
     private final String database;
@@ -37,7 +37,7 @@ public abstract class MyDBAbstract implements CommonDBInterface {
 
     private final List<Map<String, Object>> recordsMetaData;
 
-    public MyDBAbstract(String host, String dataBase, String userName, String passWord) {
+    public CommonDBAbstract(String host, String dataBase, String userName, String passWord) {
         this.host = host;
         this.database = dataBase;
         this.username = userName;
