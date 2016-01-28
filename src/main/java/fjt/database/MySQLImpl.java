@@ -1,7 +1,7 @@
-package fjt.implementations;
+package fjt.database;
 
 import java.sql.SQLException;
-import fjt.interfaces.MyDBAbstract;
+import fjt.database.MyDBAbstract;
 
 public class MySQLImpl extends MyDBAbstract {
 

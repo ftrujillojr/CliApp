@@ -1,4 +1,4 @@
-package fjt.interfaces;
+package fjt.database;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -21,9 +21,10 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import fjt.database.FKeys;
+import fjt.interfaces.CommonDBInterface;
 import fjt.utils.JsonUtils;
 
-public abstract class MyDBAbstract implements MyDBInterface {
+public abstract class MyDBAbstract implements CommonDBInterface {
 
     private final String host;
     private final String database;

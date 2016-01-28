@@ -11,7 +11,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import fjt.implementations.MySQLImpl;
+import fjt.database.MySQLImpl;
 import fjt.utils.JsonUtils;
 import fjt.utils.RegExp;
 import fjt.utils.SysUtils;

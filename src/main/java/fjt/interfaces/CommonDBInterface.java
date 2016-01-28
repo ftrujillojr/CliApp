@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-public interface MyDBInterface {
+public interface CommonDBInterface {
 
     public void openConnection() throws SQLException;
     
