@@ -4,7 +4,6 @@ package fjt.test;
 // org.junit.Test is the new namespace used by JUnit v4 and requires Java v1.5 or later for its annotations.
 import java.math.BigInteger;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -101,6 +100,7 @@ public class TestUnsignedBigIntUtils {
 
     /**
      * Test out the HEX conversion methods.
+     * @throws fjt.exceptions.UnsignedBigIntUtilsException
      */
     @Test
     public void testHex2BI() throws UnsignedBigIntUtilsException {
