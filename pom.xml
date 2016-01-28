@@ -86,7 +86,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>org.nve.cliapp.CliAppMain</mainClass>
+                            <mainClass>fjt.top.CliAppMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

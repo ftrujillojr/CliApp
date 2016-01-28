@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.cli.Option;
 import fjt.support.CliWrapper;
+import fjt.utils.SHAUtils;
+import java.util.Base64;
 
 public class CliAppMain {
 
@@ -54,6 +56,10 @@ public class CliAppMain {
             }
 
             // Your code here.
+            
+            String beer = "beer @5pm?";
+            String base64Str = SHAUtils.byteArrayToBase64String(beer.getBytes());
+            System.out.println(base64Str);
             
             System.exit(0);
 
