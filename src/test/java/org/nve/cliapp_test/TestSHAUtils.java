@@ -96,7 +96,7 @@ public class TestSHAUtils {
     @BeforeClass
     public static void setUpClass() {
         someShortPassword = "Hello123World";
-        someLongPassword = "Hello World This is a very long password with 1204-F6^%";
+        someLongPassword = "Hello World This is a very long password with 1204-F6^% Mary had a little lamb whose fleece was as white as snow.  Everywhere Mary went the lamb was sure to go.";
         filename = Paths.get("src", "main", "java", "org", "nve", "cliapp", "utils", "SHAUtils.java").toString();
     }
 
@@ -149,7 +149,7 @@ public class TestSHAUtils {
     @Test
     public void testGenerateSHA256() throws IOException {
         String sha256Hash = SHAUtils.generateSHA256Hash(someShortPassword);
-        //System.out.println("SHA256 Hash => " + sha256Hash);
+        //System.out.println("SHA256 " + sha256Hash.length()+ " => " + sha256Hash);
 
         boolean isValid = SHAUtils.validateSHA256(someShortPassword, sha256Hash);
         if (isValid == false) {
@@ -157,12 +157,23 @@ public class TestSHAUtils {
         }
 
         assertTrue(isValid);
+        
+        sha256Hash = SHAUtils.generateSHA256Hash(someLongPassword);
+        //System.out.println("SHA256 " + sha256Hash.length()+ " => " + sha256Hash);
+
+        isValid = SHAUtils.validateSHA256(someLongPassword, sha256Hash);
+        if (isValid == false) {
+            System.out.println("NO MATCH - this should have matched.");
+        }
+
+        assertTrue(isValid);
+        
     }
 
     @Test
     public void testGenerateSHA512() throws IOException {
         String sha512Hash = SHAUtils.generateSHA512Hash(someShortPassword);
-        //System.out.println("SHA512 Hash => " + sha512Hash);
+        //System.out.println("SHA512 " + sha512Hash.length() + " => " + sha512Hash);
 
         boolean isValid = SHAUtils.validateSHA512(someShortPassword, sha512Hash);
         if (isValid == false) {
@@ -170,12 +181,22 @@ public class TestSHAUtils {
         }
 
         assertTrue(isValid);
+        
+        sha512Hash = SHAUtils.generateSHA512Hash(someLongPassword);
+        //System.out.println("SHA512 " + sha512Hash.length() + " => " + sha512Hash);
+
+        isValid = SHAUtils.validateSHA512(someLongPassword, sha512Hash);
+        if (isValid == false) {
+            System.out.println("NO MATCH - this should have matched.");
+        }
+        
+        assertTrue(isValid);
     }
 
     @Test
     public void testGeneratePBKDF2Hash() throws NoSuchAlgorithmException, InvalidKeySpecException {
         String pbkdf2Hash = SHAUtils.generatePBKDF2Hash(someShortPassword);
-        //System.out.println("PBKDF2 Hash => " + pbkdf2Hash);
+        //System.out.println("PBKDF2 "+ pbkdf2Hash.length() + " => " + pbkdf2Hash);
 
         boolean isValid = SHAUtils.validatePBKDF2(someShortPassword, pbkdf2Hash);
         if (isValid == false) {

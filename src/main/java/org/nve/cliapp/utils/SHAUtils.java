@@ -17,12 +17,15 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 /**
- * All of the methods return Base64 encoded strings.  There are methods to get
- * to byte[] and Hex string if so desired.  
+ * All of the methods return Base64 encoded strings in the form  randomBase64Salt:hashBase64.
+ * 
+ * The salt is randomized for each call to hash methods.  The PEPPER is changed in STATIC vars to
+ * further flip bits in the random salt prior to generating hash.
+ * 
+ * There are methods to get to byte[] and Hex string if so desired.  
  * 
  * Please read this before storing any salt/hash passwords in database.
  * http://howtodoinjava.com/optimization/how-to-generate-secure-password-hash-md5-sha-pbkdf2-bcrypt-examples/
- * 
  * 
  * http://en.wikipedia.org/wiki/SHA-2
  *
@@ -81,7 +84,7 @@ public class SHAUtils {
      * Generate a SHA256 Hash for a file.
      * 
      * @param fileName
-     * @return
+     * @return String saltBase64:hashBase64  (133) characters
      * @throws FileNotFoundException
      * @throws IOException 
      */
@@ -115,7 +118,7 @@ public class SHAUtils {
      * 
      * @param fileName
      * @param sha256Hash
-     * @return
+     * @return true/false
      * @throws FileNotFoundException
      * @throws IOException 
      */
@@ -150,7 +153,7 @@ public class SHAUtils {
      * Generate SHA512 for a File.
      * 
      * @param fileName
-     * @return
+     * @return String saltBase64:hashBase64  (177) characters
      * @throws FileNotFoundException
      * @throws IOException 
      */
@@ -184,7 +187,7 @@ public class SHAUtils {
      * 
      * @param fileName
      * @param sha512Hash
-     * @return
+     * @return true/false
      * @throws FileNotFoundException
      * @throws IOException 
      */
@@ -219,7 +222,7 @@ public class SHAUtils {
     /**
      * DO NOT USE THIS METHOD to store passwords in database.  (see generatePBKDF2Hash)
      * @param myString
-     * @return 
+     * @return String saltBase64:hashBase64  (133) characters
      */
     public static String generateSHA256Hash(String myString) {
         StringBuilder sb = new StringBuilder();
@@ -244,7 +247,7 @@ public class SHAUtils {
      * 
      * @param originalStr
      * @param sha256Hash
-     * @return 
+     * @return true/false
      */
     public static boolean validateSHA256(String originalStr, String sha256Hash) {
         String[] parts = sha256Hash.split(":");
@@ -272,7 +275,7 @@ public class SHAUtils {
      * DO NOT USE THIS METHOD to store passwords in database.  (see generatePBKDF2Hash)
      * 
      * @param myString
-     * @return 
+     * @return String saltBase64:hashBase64  (177) characters
      */
     public static String generateSHA512Hash(String myString) {
         StringBuilder sb = new StringBuilder();
@@ -297,7 +300,7 @@ public class SHAUtils {
      * Given a string and a pre-generated 
      * @param originalStr
      * @param sha512Hash
-     * @return 
+     * @return true/false
      */
     public static boolean validateSHA512(String originalStr, String sha512Hash) {
         String[] parts = sha512Hash.split(":");
@@ -329,7 +332,7 @@ public class SHAUtils {
      * http://howtodoinjava.com/optimization/how-to-generate-secure-password-hash-md5-sha-pbkdf2-bcrypt-examples/
      *
      * @param password
-     * @return
+     * @return String saltBase64:hashBase64  (177) characters
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException
      */
@@ -350,7 +353,7 @@ public class SHAUtils {
      *
      * @param originalPassword
      * @param pbkdf2Hash
-     * @return
+     * @return true/false
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException
      */
@@ -452,7 +455,7 @@ public class SHAUtils {
         byte[] pepperByteArray = SHAUtils.base64StringToByteArray(PEPPER);
         boolean debug = false;
 
-        // bitwise XOR
+        // bitwise XOR pepper with salt.  Just making hackers patience wearing thin.
         for (int ii = 0; ii < saltByteArray.length; ii++) {
             resultByteArray[ii] ^= pepperByteArray[ii];
         }
