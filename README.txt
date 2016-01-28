@@ -24,32 +24,72 @@ pom.xml
             |--- To run test suite.  (or turn if off)
 
 
+
 /home/ftrujillo/NetBeansProjects/CliApp
 |-- Create_a_Maven_Archetype_from_an_existing_project.pdf
 |-- nbactions.xml
+|-- nb-configuration.xml
 |-- pom.xml
 |-- README.txt
 `-- src
     |-- main
     |   |-- java
-    |   |   `-- org
-    |   |       `-- nve
-    |   |           `-- cliapp
-    |   |               |-- CliWrapperException.java
-    |   |               |-- CliWrapper.java
-    |   |               |-- Latch.java
-    |   |               |-- Main.java
-    |   |               `-- RegExp.java
+    |   |   `-- fjt
+    |   |       |-- comparators
+    |   |       |   |-- CalendarComparator.java
+    |   |       |   `-- CalendarIterator.java
+    |   |       |-- database
+    |   |       |   |-- CommonDBAbstract.java
+    |   |       |   |-- ForiegnKeys.java
+    |   |       |   `-- MySQLImpl.java
+    |   |       |-- exceptions
+    |   |       |   |-- CalendarUtilsException.java
+    |   |       |   |-- CliWrapperException.java
+    |   |       |   |-- JsonUtilsException.java
+    |   |       |   |-- MySqlBuildException.java
+    |   |       |   |-- RSAException.java
+    |   |       |   |-- SysUtilsException.java
+    |   |       |   `-- UnsignedBigIntUtilsException.java
+    |   |       |-- interfaces
+    |   |       |   `-- CommonDBInterface.java
+    |   |       |-- support
+    |   |       |   |-- CliWrapper.java
+    |   |       |   |-- Latch.java
+    |   |       |   |-- RSA.java
+    |   |       |   `-- SetOps.java
+    |   |       |-- top
+    |   |       |   `-- CliAppMain.java
+    |   |       `-- utils
+    |   |           |-- CalendarUtils.java
+    |   |           |-- ConvertUtils.java
+    |   |           |-- JsonUtils.java
+    |   |           |-- RegExp.java
+    |   |           |-- SHAUtils.java
+    |   |           |-- SysUtils.java
+    |   |           `-- UnsignedBigIntUtils.java
     |   `-- resources
     `-- test
-        `-- java
-            `-- org
-                `-- nve
-                    `-- cliapp
-                        |-- TemplateTest.java
-                        |-- TestCliWrapper.java
-                        `-- TestRegExp.java
-
+        |-- java
+        |   `-- fjt
+        |       `-- test
+        |           |-- PersonDeserializer.java
+        |           |-- Person.java
+        |           |-- PersonSortByAgeSalaryComparator.java
+        |           |-- TemplateTest.java
+        |           |-- TestCalendarUtils.java
+        |           |-- TestCliWrapper.java
+        |           |-- TestJsonUtils.java
+        |           |-- TestMySQLImpl.java
+        |           |-- TestRegExp.java
+        |           |-- TestRSA.java
+        |           |-- TestSetOps.java
+        |           |-- TestSHAUtils.java
+        |           |-- TestSorting.java
+        |           |-- TestSysUtils.java
+        |           `-- TestUnsignedBigIntUtils.java
+        `-- resources
+            |-- compact.json
+            `-- pretty.json
 
 =======================================================================================
 
