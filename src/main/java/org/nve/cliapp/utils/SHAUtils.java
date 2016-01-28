@@ -17,6 +17,13 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 /**
+ * All of the methods return Base64 encoded strings.  There are methods to get
+ * to byte[] and Hex string if so desired.  
+ * 
+ * Please read this before storing any salt/hash passwords in database.
+ * http://howtodoinjava.com/optimization/how-to-generate-secure-password-hash-md5-sha-pbkdf2-bcrypt-examples/
+ * 
+ * 
  * http://en.wikipedia.org/wiki/SHA-2
  *
  * Cryptographic hash functions are mathematical operations run on digital data;
@@ -40,14 +47,14 @@ import javax.crypto.spec.PBEKeySpec;
  */
 public class SHAUtils {
 
-    // 10k => 0.265s   
-    // 20k -> 0.321s  
-    // 50k => 0.582s  
-    // 80k => 0.773  
-    // 100k => 0.892
+    // 10k  => 0.265s   
+    // 20k  => 0.321s  
+    // 50k  => 0.582s  
+    // 80k  => 0.773s  
+    // 100k => 0.892s
     private static final int ITERATIONS = 100211; // for PBKDF2.  keep this number HIGH
     private static final int KEY_LENGTH = 512; // bits for PBKDF2
-    // use SHAUtils.generateSalt() to get a new PEPPER value and then REplace in here to allow your usage to not be crackable by this string.
+    // use SHAUtils.generateSalt() to get a new PEPPER value and then REplace in here to allow your usage to not be crackable by this PEPPER string.
     private static final String PEPPER = "r5zob55OCerlFwGXU3F4aSlIVYQef349KqMmGOjyMQ92aUIrBhecw7anBHwJypHmPa9mKR3q3A+OiT34mrfZeg=="; // for all hashing.
 
     public SHAUtils() {
