@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.cli.Option;
 import fjt.support.CliWrapper;
-import fjt.utils.SHAUtils;
-import java.util.Base64;
 
 public class CliAppMain {
 
@@ -37,7 +35,7 @@ public class CliAppMain {
         // CliWrapper is based on Apache CLI with code to check for duplicate keys.
         // That functionality is missing in their implementation.
         CliWrapper cliWrapper = new CliWrapper(
-                optionList, 
+                optionList,
                 "CliApp",
                 "This app is a base line app to building Java CLI applications.",
                 "me@somecompany.org"
@@ -56,11 +54,6 @@ public class CliAppMain {
             }
 
             // Your code here.
-            
-            String beer = "beer @5pm?";
-            String base64Str = SHAUtils.byteArrayToBase64String(beer.getBytes());
-            System.out.println(base64Str);
-            
             System.exit(0);
 
         } catch (CliWrapperException ex) {

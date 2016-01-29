@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import org.apache.commons.httpclient.Cookie;
 
 /**
  * Just a few methods to help with System level stuff by utilizing standard Java
@@ -518,7 +519,7 @@ public final class SysUtils {
         }
     }
 
-    public static <T,U> void displayMap(Map<T,U> map) {
+    public static <T, U> void displayMap(Map<T, U> map) {
         Iterator<T> itr = map.keySet().iterator();
         while (itr.hasNext()) {
             T t = itr.next();
@@ -530,7 +531,7 @@ public final class SysUtils {
             }
         }
     }
-    
+
     /**
      * Display a Set&lt;T&gt; to stdout.
      *
