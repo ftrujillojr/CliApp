@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import fjt.database.ForiegnKeys;
 import fjt.interfaces.CommonDBInterface;
 import fjt.utils.JsonUtils;
 
@@ -30,6 +29,10 @@ public abstract class CommonDBAbstract implements CommonDBInterface {
     private final String database;
     private final String username;
     private final String password;
+
+    private final String instance;  // MSSQL
+    private final String port;      // MSSQL
+
     private final List<String> subExps;
     private Connection connection = null;
     private String jdbcString;
@@ -39,6 +42,20 @@ public abstract class CommonDBAbstract implements CommonDBInterface {
 
     public CommonDBAbstract(String host, String dataBase, String userName, String passWord) {
         this.host = host;
+        this.database = dataBase;
+        this.username = userName;
+        this.password = passWord;
+        this.instance = "";
+        this.port = "";
+        this.subExps = new ArrayList<>();
+
+        this.recordsMetaData = new ArrayList<>();
+    }
+
+    public CommonDBAbstract(String host, String instance, String port, String dataBase, String userName, String passWord) {
+        this.host = host;
+        this.instance = instance;
+        this.port = port;
         this.database = dataBase;
         this.username = userName;
         this.password = passWord;
@@ -64,15 +81,18 @@ public abstract class CommonDBAbstract implements CommonDBInterface {
     }
 
     public List<String> getTables() throws SQLException {
-
         DatabaseMetaData dbMetaData = this.connection.getMetaData();
         ResultSet resultSet = dbMetaData.getTables(null, null, "%", null);
 
         List<String> tablesList = new ArrayList<>();
         while (resultSet.next()) {
-            tablesList.add(resultSet.getString("TABLE_NAME"));
-        }
+            String tableType = resultSet.getString("TABLE_TYPE");
 
+            if (tableType == null || tableType.toUpperCase().equals("TABLE")) {
+                String line = resultSet.getString("TABLE_NAME");
+                tablesList.add(line);
+            }
+        }
         return tablesList;
     }
 
@@ -355,10 +375,10 @@ public abstract class CommonDBAbstract implements CommonDBInterface {
 
     /**
      * For a given tableName, return the PRIMARY_KEY columnName.
-     * 
+     *
      * @param tableName
      * @return PRIMARY_KEY columnName
-     * @throws SQLException 
+     * @throws SQLException
      */
     @Override
     public String getPrimaryKeyColumnForTable(String tableName) throws SQLException {
@@ -374,17 +394,17 @@ public abstract class CommonDBAbstract implements CommonDBInterface {
 
     /**
      * For a given tableName, return a List of ForiegnKeys.
-     * 
+     *
      * @param tableName
      * @return List of ForiegnKeys
-     * @throws SQLException 
+     * @throws SQLException
      */
     @Override
     public List<ForiegnKeys> getForiegnKeysColumnsForTable(String tableName) throws SQLException {
         DatabaseMetaData dbMetaData = this.connection.getMetaData();
         ResultSet resultSet = dbMetaData.getImportedKeys(null, null, tableName);
         List<ForiegnKeys> foriegnKeysList = new ArrayList<>();
-        
+
         while (resultSet.next()) {
             ForiegnKeys fkeys = new ForiegnKeys();
             fkeys.setTableName(tableName);
@@ -395,7 +415,7 @@ public abstract class CommonDBAbstract implements CommonDBInterface {
         }
         return foriegnKeysList;
     }
-    
+
     // http://www.studytrails.com/java/json/java-google-json-java-to-json.jsp
     protected String convertResultSet2Json(ResultSet rs) throws SQLException {
         ResultSetMetaData rsmd = rs.getMetaData();
@@ -409,7 +429,7 @@ public abstract class CommonDBAbstract implements CommonDBInterface {
             String tableName = rsmd.getTableName(colNo);
             String priKey = this.getPrimaryKeyColumnForTable(tableName);
             List<ForiegnKeys> foriegnKeysList = this.getForiegnKeysColumnsForTable(tableName);
-            
+
             int displaySize = rsmd.getColumnDisplaySize(colNo);
 
             String nullable = (rsmd.isNullable(colNo) == ResultSetMetaData.columnNullable) ? " NULL" : " NOT_NULL";
@@ -418,11 +438,11 @@ public abstract class CommonDBAbstract implements CommonDBInterface {
             if (rsmd.isAutoIncrement(colNo)) {
                 columnTypeDef += " AUTO_INCREMENT";
             }
-            
-            if(priKey.isEmpty() == false && priKey.equals(columnName)) {
+
+            if (priKey.isEmpty() == false && priKey.equals(columnName)) {
                 columnTypeDef += " PRIMARY_KEY";
             }
-            
+
             columnNameTypesObject.addProperty(columnName, columnTypeDef);
         }
 

@@ -27,6 +27,7 @@ import java.util.Base64.Decoder;
 import java.util.Base64;
 import fjt.exceptions.RSAException;
 import fjt.utils.SysUtils;
+import java.util.Arrays;
 
 public final class RSA {
 
@@ -41,7 +42,7 @@ public final class RSA {
         this.algorithm = "RSA";
         this.privateKey = Paths.get(dirName, projectName, "private.key").toString();
         this.publicKey = Paths.get(dirName, projectName, "public.key").toString();
-        this.numBitsEncryption = numBits; 
+        this.numBitsEncryption = numBits;
         this.cipher = null;
         this.debug = false;
 
@@ -49,13 +50,11 @@ public final class RSA {
             this.generateKey();
         }
     }
-    
 
     public void setDebug(boolean debug) {
         this.debug = debug;
     }
 
-    
     /**
      * The method checks if the pair of public and private key has been
      * generated.
@@ -76,7 +75,7 @@ public final class RSA {
         }
         return false;
     }
-    
+
     /**
      *
      * @param plainText
@@ -127,7 +126,7 @@ public final class RSA {
             String msg = "\nERROR: Failed to decryptBase64(String plainText)";
             throw new RSAException(msg);
         }
-        
+
         if (this.debug) {
             System.out.println("DEBUG: RSA.decryptBase64() length:" + plainText.length() + "  after " + plainText);
         }
@@ -172,7 +171,6 @@ public final class RSA {
             Logger.getLogger(RSA.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
 
     /**
      * Encrypt the plain text using public key.
@@ -228,7 +226,7 @@ public final class RSA {
             this.cipher.init(Cipher.DECRYPT_MODE, privateKey);
 
             byte[] decryptedBytes = blockCipher(text, Cipher.DECRYPT_MODE);
-            decryptedStr = new String(decryptedBytes, "UTF-8");
+            decryptedStr = new String(this.truncateZerosOnByteArray(decryptedBytes), "UTF-8");
 
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException ex) {
             throw ex;
@@ -237,6 +235,14 @@ public final class RSA {
         }
 
         return decryptedStr;
+    }
+
+    private byte[] truncateZerosOnByteArray(byte[] byteArray) {
+        int ii = byteArray.length - 1;
+        while (byteArray[ii] == 0) {
+            ii--;
+        }
+        return (Arrays.copyOf(byteArray, ii + 1));
     }
 
     private byte[] blockCipher(byte[] bytes, int mode) throws IllegalBlockSizeException, BadPaddingException {
@@ -285,7 +291,7 @@ public final class RSA {
         toReturn = append(toReturn, scrambled);
 
         if (this.debug) {
-            if(mode == Cipher.ENCRYPT_MODE) {
+            if (mode == Cipher.ENCRYPT_MODE) {
                 System.out.println("ENCRYPT_MODE");
             } else {
                 System.out.println("DECRYPT_MODE");
